@@ -73,11 +73,42 @@ stateDiagram-v2
 1. Configure messages in the Message Editor tab.
 2. Switch to **Scenario Builder** and click **Add Step from Current Message**.
 3. Set delays, repeats, loop count and interval.
-4. Click **Start** to run; use **Pause**, **Resume**, and **Stop** to control execution.
+4. For moving tracks (Cat 062, 048, 034): enable **Animate route** on a step, set the end waypoint, **Ticks** (number of updates), and **Interval (ms)** between updates.
+5. Click **Start** to run; use **Pause**, **Resume**, and **Stop** to control execution.
+
+### Route animation
+
+When **Send multiple messages** is enabled on a step, Obelix sends several messages with changing position:
+
+| Mode | Use when |
+|------|----------|
+| **Direction from start** | You only have a start point — set heading (0=N, 90=E), distance per message, count and interval |
+| **Route to endpoint** | You know start and end — Obelix interpolates between them |
+
+| Category | Animated fields |
+|----------|-------------------|
+| **062** | WGS-84 lat/lon or Cartesian X/Y; optional time and derived velocity |
+| **048** | Range (RHO) and azimuth (THETA) |
+| **034** | Antenna azimuth (sector crossing) |
+
+**Without motion:** set **Repeat** on the step to send the same message multiple times.
+
+**Change a step later:** edit the message in Message Editor, then click **Update from Editor** on the step.
+
+**Add another message type:** configure a new message and click **+ Add Step from Current Message** again.
 
 ## Templates and scenarios
 
-Save message templates and scenarios from the UI. They are stored as JSON files under `data/templates/` and `data/scenarios/`.
+Save message configurations from the UI:
+
+| Button | Location | Git |
+|--------|----------|-----|
+| **Save locally** | `data/configurations/catXXX/` | Ignored (private) |
+| **Save to repository** | `configurations/catXXX/` | Commit when ready |
+
+Load from the **Configurations & Scenarios** tab. See [configurations/README.md](../configurations/README.md) for git workflow.
+
+Scenarios are stored under `data/scenarios/` (local by default).
 
 ## Testing a UDP receiver
 

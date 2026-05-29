@@ -7,31 +7,26 @@ services:
     ports:
       - "${OBELIX_HTTP_PORT:-8000}:8000"
     environment:
-      OBELIX_TEMPLATES_DIR: /app/data/templates
+      OBELIX_SHARED_CONFIGURATIONS_DIR: /app/configurations
+      OBELIX_LOCAL_CONFIGURATIONS_DIR: /app/data/configurations
       OBELIX_SCENARIOS_DIR: /app/data/scenarios
       OBELIX_HOST: 0.0.0.0
       OBELIX_PORT: 8000
     volumes:
+      - ./configurations:/app/configurations
       - ./data:/app/data
     restart: unless-stopped
     networks:
       - obelix
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   udp-receiver:
     image: python:3.12-slim
     container_name: obelix-udp-receiver
-    profiles:
-      - tools
-    command: >
-      python -c "
-      import socket
-      s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-      s.bind(('0.0.0.0', 8600))
-      print('Listening on UDP 8600...', flush=True)
-      while True:
-          data, addr = s.recvfrom(4096)
-          print(f'{addr}: {data.hex().upper()}', flush=True)
-      "
+    command: ["python", "/scripts/udp-receiver.py"]
+    volumes:
+      - ./scripts/udp-receiver.py:/scripts/udp-receiver.py:ro
     ports:
       - "${OBELIX_UDP_PORT:-8600}:8600/udp"
     networks:

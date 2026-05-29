@@ -6,6 +6,7 @@ import asyncio
 import uuid
 from typing import Any
 
+from app.core.motion import apply_step_motion, step_send_count
 from app.asterix.registry import encode_message
 from app.models.schemas import Scenario, ScenarioRunState, ScenarioStatus
 from app.transport.sender import TransportProtocol, send_tcp, send_udp
@@ -117,12 +118,36 @@ class ScenarioRunner:
                         if stop_event.is_set():
                             break
 
-                    data = encode_message(step.message.category, step.message.fields)
-                    for _ in range(step.repeat):
+                    send_count = step_send_count(step.repeat, step.motion)
+                    for tick in range(send_count):
                         await pause_event.wait()
                         if stop_event.is_set():
                             break
-                        await self._send(data, scenario.transport.host, scenario.transport.port, scenario.transport.protocol)
+
+                        if tick > 0 and step.motion and step.motion.enabled:
+                            await self._interruptible_sleep(
+                                step.motion.tick_interval_ms, pause_event, stop_event
+                            )
+                            if stop_event.is_set():
+                                break
+
+                        fields = step.message.fields
+                        if step.motion and step.motion.enabled and len(step.motion.waypoints) >= 2:
+                            fields = apply_step_motion(
+                                step.message.category,
+                                step.message.fields,
+                                step.motion,
+                                tick,
+                                send_count,
+                            )
+
+                        data = encode_message(step.message.category, fields)
+                        await self._send(
+                            data,
+                            scenario.transport.host,
+                            scenario.transport.port,
+                            scenario.transport.protocol,
+                        )
                         state.messages_sent += 1
 
                 loop_num += 1

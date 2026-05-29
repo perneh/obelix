@@ -53,7 +53,8 @@ def api_client(tmp_path, monkeypatch) -> TestClient:
     from app.core.config import get_settings
 
     get_settings.cache_clear()
-    monkeypatch.setenv("OBELIX_TEMPLATES_DIR", str(tmp_path / "templates"))
+    monkeypatch.setenv("OBELIX_SHARED_CONFIGURATIONS_DIR", str(tmp_path / "configurations"))
+    monkeypatch.setenv("OBELIX_LOCAL_CONFIGURATIONS_DIR", str(tmp_path / "local-configurations"))
     monkeypatch.setenv("OBELIX_SCENARIOS_DIR", str(tmp_path / "scenarios"))
     logger.debug("Created in-process TestClient with tmp storage at %s", tmp_path)
     return TestClient(create_app())

@@ -230,10 +230,27 @@ Share `.pcapng` files with colleagues — they do not need Obelix running to ana
 
 | Check | Action |
 |-------|--------|
-| Wrong host in UI | Use `obelix-udp-receiver`, not `127.0.0.1` |
-| Wrong interface | Try `docker0` / `bridge100` or loopback depending on target |
-| Receiver not running | `./obelix start --dev --tools` |
+| **Using `127.0.0.1` in Obelix UI** | Wrong for Docker — use `host.docker.internal` or `obelix-udp-receiver` |
+| **UDP receiver not running** | Run `./obelix start --dev` (starts `obelix-udp-receiver` on port 8600) |
+| **Wrong interface** | For `host.docker.internal`: capture **Loopback** (`lo0`). For `obelix-udp-receiver`: Docker bridge (`bridge100` on macOS) |
+| **Wrong capture filter** | Use `udp port 8600` (not `tcp`) |
+| **Capture not started before send** | Start Wireshark capture first, then click Send in Obelix |
 | Port mismatch | Default is `8600`; match `OBELIX_UDP_PORT` if changed |
+
+Verify traffic without Wireshark:
+
+```bash
+# Should print hex after Send in UI
+./obelix logs -f udp-receiver
+```
+
+Quick API test:
+
+```bash
+curl -X POST http://localhost:8000/api/send -H 'Content-Type: application/json' \
+  -d '{"message":{"category":34,"fields":{"message_type":1,"data_source":{"sac":1,"sic":2}}},
+       "host":"host.docker.internal","port":8600,"protocol":"udp"}'
+```
 
 ### UDP arrives but no ASTERIX decode
 

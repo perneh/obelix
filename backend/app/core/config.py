@@ -8,7 +8,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="OBELIX_")
 
     data_dir: Path = Path("data")
-    templates_dir: Path = Path("data/templates")
+    shared_configurations_dir: Path = Path("configurations")
+    local_configurations_dir: Path = Path("data/configurations")
+    templates_dir: Path = Path("data/templates")  # legacy alias
     scenarios_dir: Path = Path("data/scenarios")
     host: str = "0.0.0.0"
     port: int = 8000

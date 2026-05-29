@@ -4,12 +4,15 @@ WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    OBELIX_TEMPLATES_DIR=/app/data/templates \
+    OBELIX_SHARED_CONFIGURATIONS_DIR=/app/configurations \
+    OBELIX_LOCAL_CONFIGURATIONS_DIR=/app/data/configurations \
     OBELIX_SCENARIOS_DIR=/app/data/scenarios
 
 COPY pyproject.toml README.md ./
 COPY backend/ backend/
 COPY frontend/ frontend/
+COPY configurations/ configurations/
+COPY docs/categories/ docs/categories/
 COPY data/ data/
 
 RUN pip install --no-cache-dir --upgrade pip \

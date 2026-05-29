@@ -24,6 +24,7 @@ Cat 062 follows the same plugin pattern. See `backend/app/asterix/categories/cat
 3. Implement `encode_record()` using `build_fspec()` and item encoders.
 4. Register the class in `backend/app/asterix/registry.py`.
 5. Add encoding tests in `backend/tests/unit/` using the support library — see [backend/tests/README.md](../backend/tests/README.md).
+6. Add a category reference page in `docs/categories/catXXX.md` (served to the UI via `GET /api/categories/{category}/help`).
 
 The frontend will automatically pick up the new category via the API.
 
@@ -31,7 +32,8 @@ The frontend will automatically pick up the new category via the API.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `OBELIX_TEMPLATES_DIR` | `data/templates` | Directory for message templates |
-| `OBELIX_SCENARIOS_DIR` | `data/scenarios` | Directory for saved scenarios |
+| `OBELIX_SHARED_CONFIGURATIONS_DIR` | `configurations` | Git-tracked presets (`scope=shared`) |
+| `OBELIX_LOCAL_CONFIGURATIONS_DIR` | `data/configurations` | Local saves (`scope=local`) |
+| `OBELIX_SCENARIOS_DIR` | `data/scenarios` | Saved scenarios |
 | `OBELIX_HOST` | `0.0.0.0` | Server bind host |
 | `OBELIX_PORT` | `8000` | Server bind port |

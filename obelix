@@ -114,17 +114,24 @@ cmd_start() {
     info "Source mounted – changes to backend/ and frontend/ reload automatically."
   fi
 
-  # shellcheck disable=SC2086
-  compose_cmd "$mode" up -d $build $tools "${services[@]:-app}"
+  if [[ -n "$tools" ]]; then
+    export COMPOSE_PROFILES=tools
+  fi
+
+  if [[ ${#services[@]} -eq 0 ]]; then
+    # shellcheck disable=SC2086
+    compose_cmd "$mode" up -d $build
+  else
+    # shellcheck disable=SC2086
+    compose_cmd "$mode" up -d $build "${services[@]}"
+  fi
 
   save_mode "$mode"
   ok "Obelix is running (${mode} mode)"
   echo ""
   echo "  Web UI:  http://localhost:${OBELIX_HTTP_PORT:-8000}"
   echo "  API docs: http://localhost:${OBELIX_HTTP_PORT:-8000}/docs"
-  if [[ -n "$tools" ]]; then
-    echo "  UDP recv: localhost:${OBELIX_UDP_PORT:-8600}"
-  fi
+  echo "  UDP recv: localhost:${OBELIX_UDP_PORT:-8600} (Wireshark: capture Loopback, filter udp port 8600)"
   echo ""
   echo "  Stop with: ./obelix stop"
 }

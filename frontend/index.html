@@ -16,7 +16,7 @@
     <nav class="tabs">
       <button class="tab active" data-tab="message">Message Editor</button>
       <button class="tab" data-tab="scenario">Scenario Builder</button>
-      <button class="tab" data-tab="library">Templates &amp; Scenarios</button>
+      <button class="tab" data-tab="library">Configurations &amp; Scenarios</button>
     </nav>
 
     <!-- Message Editor -->
@@ -29,8 +29,16 @@
 
         <div class="editor">
           <div class="card">
-            <h2 id="category-title">Select a category</h2>
-            <p id="category-description" class="muted"></p>
+            <div class="category-header">
+              <div>
+                <h2 id="category-title">Select a category</h2>
+                <p id="category-description" class="muted"></p>
+              </div>
+              <button type="button" id="btn-category-help" class="btn secondary btn-sm" hidden>
+                Category help
+              </button>
+            </div>
+            <div id="category-help-panel" class="help-panel hidden" aria-live="polite"></div>
             <form id="message-form"></form>
           </div>
 
@@ -40,14 +48,19 @@
             <div class="actions">
               <button type="button" id="btn-encode" class="btn secondary">Generate Hex</button>
               <button type="button" id="btn-send" class="btn primary">Send via UDP</button>
-              <button type="button" id="btn-save-template" class="btn secondary">Save as Template</button>
+              <button type="button" id="btn-add-to-scenario" class="btn secondary">Add to Scenario →</button>
+              <button type="button" id="btn-save-local" class="btn secondary">Save locally</button>
+              <button type="button" id="btn-save-shared" class="btn secondary">Save to repository</button>
             </div>
           </div>
 
           <div class="card">
             <h3>Transport</h3>
             <div class="form-row">
-              <label>Host <input type="text" id="send-host" value="127.0.0.1"></label>
+              <label>Host
+                <input type="text" id="send-host" value="host.docker.internal"
+                  title="Use host.docker.internal for Wireshark on loopback, or obelix-udp-receiver for Docker bridge capture">
+              </label>
               <label>Port <input type="number" id="send-port" value="8600" min="1" max="65535"></label>
               <label>Protocol
                 <select id="send-protocol">
@@ -56,6 +69,10 @@
                 </select>
               </label>
             </div>
+            <p class="muted transport-hint">
+              Docker: use <code>host.docker.internal</code> (capture on Loopback) or
+              <code>obelix-udp-receiver</code> (capture on Docker bridge). Avoid <code>127.0.0.1</code>.
+            </p>
             <p id="send-status" class="status"></p>
           </div>
         </div>
@@ -64,40 +81,111 @@
 
     <!-- Scenario Builder -->
     <section id="tab-scenario" class="panel">
-      <div class="card">
+      <div class="card scenario-intro">
         <h2>Scenario Builder</h2>
-        <div class="form-row">
-          <label>Scenario name <input type="text" id="scenario-name" placeholder="My scenario"></label>
-          <label>Loop count <input type="number" id="scenario-loops" value="1" min="0" title="0 = infinite"></label>
-          <label>Interval (ms) <input type="number" id="scenario-interval" value="1000" min="0"></label>
+        <p class="lead">A scenario sends one or more ASTERIX messages in sequence — for example a moving aircraft track or a series of radar plots.</p>
+
+        <ol class="workflow-steps" id="scenario-workflow">
+          <li class="workflow-step" data-wf="create">
+            <span class="wf-num">1</span>
+            <div class="wf-body">
+              <strong>Create a message</strong>
+              <p>In <em>Message Editor</em>, select a category (e.g. Cat 62) and configure the fields.</p>
+              <button type="button" id="btn-goto-message" class="btn secondary btn-sm">Open Message Editor</button>
+            </div>
+          </li>
+          <li class="workflow-step" data-wf="add">
+            <span class="wf-num">2</span>
+            <div class="wf-body">
+              <strong>Add steps to the scenario</strong>
+              <p>Each step is a snapshot of your message. Optionally enable <em>Animate route</em> so position changes over time.</p>
+            </div>
+          </li>
+          <li class="workflow-step" data-wf="configure">
+            <span class="wf-num">3</span>
+            <div class="wf-body">
+              <strong>Configure transport &amp; timing</strong>
+              <p>Set where to send (host/port) and how often the scenario repeats.</p>
+            </div>
+          </li>
+          <li class="workflow-step" data-wf="run">
+            <span class="wf-num">4</span>
+            <div class="wf-body">
+              <strong>Run</strong>
+              <p>Click <em>Start Scenario</em> to begin sending. Use Pause or Stop to control playback.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <div class="card-section-header">
+          <div>
+            <h3>Steps</h3>
+            <p class="muted section-desc">Messages sent in order, top to bottom. Add at least one step before running.</p>
+          </div>
+          <span class="step-count-badge" id="scenario-step-count">0 steps</span>
         </div>
+        <div id="scenario-steps"></div>
+        <div class="step-actions">
+          <button type="button" id="btn-add-step" class="btn secondary">+ Add Step from Current Message</button>
+          <span class="field-hint">Uses the message currently open in Message Editor. Switch tab first if needed.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Scenario settings</h3>
+        <p class="muted section-desc">Applies to the whole scenario — all steps share the same transport target.</p>
         <div class="form-row">
-          <label>Host <input type="text" id="scenario-host" value="127.0.0.1"></label>
-          <label>Port <input type="number" id="scenario-port" value="8600" min="1" max="65535"></label>
-          <label>Protocol
-            <select id="scenario-protocol">
-              <option value="udp" selected>UDP</option>
-              <option value="tcp">TCP</option>
-            </select>
+          <label>Name
+            <input type="text" id="scenario-name" placeholder="e.g. Stockholm departure track">
+            <span class="field-hint">For your reference when saving</span>
+          </label>
+          <label>Loop count
+            <input type="number" id="scenario-loops" value="1" min="0">
+            <span class="field-hint">How many times to replay all steps. 0 = infinite.</span>
+          </label>
+          <label>Pause between loops (ms)
+            <input type="number" id="scenario-interval" value="1000" min="0">
+            <span class="field-hint">Wait time after finishing all steps before restarting.</span>
           </label>
         </div>
+        <fieldset class="transport-fieldset">
+          <legend>Transport (where to send)</legend>
+          <div class="form-row">
+            <label>Host
+              <input type="text" id="scenario-host" value="host.docker.internal">
+              <span class="field-hint">Docker: <code>host.docker.internal</code> for Wireshark on loopback</span>
+            </label>
+            <label>Port
+              <input type="number" id="scenario-port" value="8600" min="1" max="65535">
+            </label>
+            <label>Protocol
+              <select id="scenario-protocol">
+                <option value="udp" selected>UDP</option>
+                <option value="tcp">TCP</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
       </div>
 
-      <div class="card">
-        <h3>Steps</h3>
-        <div id="scenario-steps"></div>
-        <button type="button" id="btn-add-step" class="btn secondary">Add Step from Current Message</button>
-      </div>
-
-      <div class="card">
-        <div class="actions">
-          <button type="button" id="btn-start-scenario" class="btn primary">Start</button>
-          <button type="button" id="btn-pause-scenario" class="btn secondary">Pause</button>
-          <button type="button" id="btn-resume-scenario" class="btn secondary">Resume</button>
-          <button type="button" id="btn-stop-scenario" class="btn danger">Stop</button>
+      <div class="card scenario-run-card">
+        <h3>Run scenario</h3>
+        <p class="muted section-desc">Sends each step in order. While a step has <em>Animate route</em> enabled, multiple messages are sent along the route at the configured interval.</p>
+        <div class="actions run-actions">
+          <button type="button" id="btn-start-scenario" class="btn primary btn-lg" disabled title="Add at least one step first">
+            ▶ Start Scenario
+          </button>
+          <button type="button" id="btn-pause-scenario" class="btn secondary" disabled>Pause</button>
+          <button type="button" id="btn-resume-scenario" class="btn secondary" disabled>Resume</button>
+          <button type="button" id="btn-stop-scenario" class="btn danger" disabled>Stop</button>
           <button type="button" id="btn-save-scenario" class="btn secondary">Save Scenario</button>
         </div>
-        <pre id="scenario-status" class="status-block">No active scenario</pre>
+        <div class="scenario-status-wrap">
+          <h4>Status</h4>
+          <pre id="scenario-status" class="status-block">Ready — add steps above, then click Start Scenario.</pre>
+        </div>
       </div>
     </section>
 
@@ -105,8 +193,16 @@
     <section id="tab-library" class="panel">
       <div class="grid two-col">
         <div class="card">
-          <h2>Message Templates</h2>
-          <ul id="template-list" class="item-list"></ul>
+          <h2>Message configurations</h2>
+          <p class="muted">Shared presets live in <code>configurations/</code> (git). Local saves go to <code>data/configurations/</code>.</p>
+          <div class="form-row">
+            <label>Filter category
+              <select id="config-category-filter">
+                <option value="">All categories</option>
+              </select>
+            </label>
+          </div>
+          <ul id="configuration-list" class="item-list"></ul>
         </div>
         <div class="card">
           <h2>Saved Scenarios</h2>
@@ -116,6 +212,6 @@
     </section>
   </main>
 
-  <script src="/js/app.js"></script>
+  <script type="module" src="/js/app.js"></script>
 </body>
 </html>

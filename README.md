@@ -21,7 +21,9 @@ Open [http://localhost:8000](http://localhost:8000) — API docs at [http://loca
 | [Wireshark & ASTERIX](docs/wireshark-asterix.md) | Install Wireshark on macOS, Ubuntu, Red Hat, Windows |
 | [Wireshark + Docker](docs/wireshark-docker-usecase.md) | Decode ASTERIX from Obelix Docker containers |
 | [Development](docs/development.md) | Tests, adding categories, environment variables |
+| [Category reference](docs/categories/README.md) | Per-category help (Cat 034, 048, 062) — also in the UI |
 | [Testing](backend/tests/README.md) | Pytest layout, functional style, CLI options |
+| [Configurations](../configurations/README.md) | Save & share category setups via git |
 
 ## Features
 

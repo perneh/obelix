@@ -150,6 +150,11 @@ activemq-data/
 # Environments
 .env
 .envrc
+# Local runtime data (not version-controlled)
+data/configurations/
+data/templates/
+data/scenarios/*
+!data/scenarios/.gitkeep
 .obelix
 .venv
 env/

@@ -36,6 +36,16 @@ def run_get_category_detail(client, category: int) -> dict[str, Any]:
     return response.json()
 
 
+def run_get_category_help(client, category: int) -> HttpResult:
+    logger.debug("GET /api/categories/%s/help", category)
+    response = client.get(f"/api/categories/{category}/help")
+    logger.debug("Response status=%s", response.status_code)
+    body = response.json() if response.content else None
+    if response.status_code >= 400:
+        logger.error("Get category help failed: status=%s body=%s", response.status_code, response.text)
+    return HttpResult(status_code=response.status_code, json=body, text=response.text)
+
+
 def run_encode_message(client, payload: dict[str, Any]) -> HttpResult:
     logger.debug("POST /api/encode payload category=%s", payload.get("message", {}).get("category"))
     response = client.post("/api/encode", json=payload)
@@ -43,6 +53,26 @@ def run_encode_message(client, payload: dict[str, Any]) -> HttpResult:
     body = response.json() if response.content else None
     if response.status_code >= 400:
         logger.error("Encode failed: status=%s body=%s", response.status_code, response.text)
+    return HttpResult(status_code=response.status_code, json=body, text=response.text)
+
+
+def run_save_configuration(client, payload: dict[str, Any]) -> HttpResult:
+    logger.debug("POST /api/configurations id=%s scope=%s", payload.get("id"), payload.get("scope"))
+    response = client.post("/api/configurations", json=payload)
+    logger.debug("Response status=%s", response.status_code)
+    body = response.json() if response.content else None
+    if response.status_code >= 400:
+        logger.error("Save configuration failed: status=%s body=%s", response.status_code, response.text)
+    return HttpResult(status_code=response.status_code, json=body, text=response.text)
+
+
+def run_load_configuration(client, config_id: str) -> HttpResult:
+    logger.debug("GET /api/configurations/%s", config_id)
+    response = client.get(f"/api/configurations/{config_id}")
+    logger.debug("Response status=%s", response.status_code)
+    body = response.json() if response.content else None
+    if response.status_code >= 400:
+        logger.error("Load configuration failed: status=%s body=%s", response.status_code, response.text)
     return HttpResult(status_code=response.status_code, json=body, text=response.text)
 
 

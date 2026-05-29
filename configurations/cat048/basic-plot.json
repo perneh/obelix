@@ -1,0 +1,14 @@
+{
+  "id": "basic-plot",
+  "name": "Basic Plot",
+  "description": "Cat 048 monoradar plot at 10 NM / 45° with Mode 3/A 7000",
+  "scope": "shared",
+  "message": {
+    "category": 48,
+    "fields": {
+      "data_source": {"sac": 1, "sic": 1},
+      "position": {"rho_nm": 10.0, "theta_deg": 45.0},
+      "mode3a": 7000
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "id": "system-track-wgs84",
+  "name": "System Track (WGS-84)",
+  "description": "Cat 062 system track over Stockholm with velocity and altitude",
+  "scope": "shared",
+  "message": {
+    "category": 62,
+    "fields": {
+      "data_source": {"sac": 1, "sic": 2},
+      "service_id": 1,
+      "time_of_track": 44100.0,
+      "position_type": 2,
+      "wgs84": {"latitude_deg": 59.3293, "longitude_deg": 18.0686},
+      "cartesian": {"x_m": 1000.0, "y_m": 2000.0},
+      "velocity": {"vx_mps": 120.0, "vy_mps": -30.0},
+      "mode3a": {
+        "code": 7000,
+        "validated": 1,
+        "garbled": 0,
+        "changed": 0
+      },
+      "track_number": 100,
+      "track_status": {
+        "monosensor": 0,
+        "spi": 0,
+        "mrh_geometric": 1,
+        "src": 0,
+        "tentative": 0
+      },
+      "flight_level": 350.0,
+      "geometric_altitude_ft": 35000.0,
+      "include_velocity": 1,
+      "include_geometric_altitude": 1
+    }
+  }
+}

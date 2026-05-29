@@ -1,7 +1,8 @@
 {
-  "id": "north-marker-default",
-  "name": "North Marker (Cat 034)",
-  "description": "Default north marker service message",
+  "id": "north-marker",
+  "name": "North Marker",
+  "description": "Cat 034 north marker service message (SAC=1, SIC=1)",
+  "scope": "shared",
   "message": {
     "category": 34,
     "fields": {
