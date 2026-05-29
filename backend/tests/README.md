@@ -104,20 +104,21 @@ Regression layout:
 
 | Suite | File | Endpoints covered |
 |-------|------|-------------------|
-| Health | `regression/test_health.py` | `GET /api/categories` |
+| Health | `regression/test_health.py` | `GET /api/categories` (all 8 categories) |
 | Frontend | `regression/test_frontend.py` | `GET /` |
-| Cat 015–240 | `regression/test_cat*.py` | category detail, help, `POST /api/encode` |
+| Cat 015 | `regression/test_cat015.py` | detail, help, `POST /api/encode`, `POST /api/send/15` |
+| Cat 016 | `regression/test_cat016.py` | detail, help, `POST /api/encode`, `POST /api/send/16` |
+| Cat 021 | `regression/test_cat021.py` | detail, help, `POST /api/encode`, `POST /api/send/21` |
+| Cat 034 | `regression/test_cat034.py` | detail, help, `POST /api/encode`, `POST /api/send/34` |
+| Cat 048 | `regression/test_cat048.py` | detail, help, `POST /api/encode`, `POST /api/send/48` |
+| Cat 062 | `regression/test_cat062.py` | detail, help, `POST /api/encode`, `POST /api/send/62` |
+| Cat 065 | `regression/test_cat065.py` | detail, help, `POST /api/encode`, `POST /api/send/65` |
+| Cat 240 | `regression/test_cat240.py` | detail, help, `POST /api/encode`, `POST /api/send/240` |
 | Configurations | `regression/test_configurations.py` | `/api/configurations` CRUD |
 | Scenarios | `regression/test_scenarios.py` | validate, motion-defaults, runs |
 | Templates | `regression/test_scenario_templates.py` | `/api/scenario-templates` |
 | Saved scenarios | `regression/test_saved_scenarios.py` | `/api/saved-scenarios` |
-| Send | `regression/test_send.py` | `POST /api/encode`, `POST /api/send` |
-
-Verify custom CLI options:
-
-```bash
-pytest --help | grep -E 'address|port|url'
-```
+| Send | `regression/test_send.py` | `POST /api/send`, `POST /api/send/34`, OpenAPI paths |
 
 ## Directory layout
 

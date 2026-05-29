@@ -6,9 +6,14 @@ Saved field values for each ASTERIX category. Use these files to version-control
 
 ```text
 configurations/
+├── cat015/          # INCS target reports
+├── cat016/          # INCS configuration reports
+├── cat021/          # ADS-B target reports
 ├── cat034/          # Monoradar service messages
 ├── cat048/          # Monoradar target reports
 ├── cat062/          # System track data
+├── cat065/          # SDPS service status reports
+├── cat240/          # Radar video transmission
 └── README.md
 
 data/configurations/ # Local-only saves (not tracked by git)
@@ -32,9 +37,10 @@ Each file is JSON with:
 | Button | Scope | Location |
 |--------|-------|----------|
 | **Save locally** | `local` | `data/configurations/catXXX/` |
-| **Save to repository** | `shared` | `configurations/catXXX/` |
 
 Load configurations from the **Configurations** tab (grouped by category).
+
+To share a preset via git, copy or move the JSON into the matching `configurations/catXXX/` folder and commit (see below).
 
 ## Push to git
 
@@ -46,6 +52,8 @@ git add configurations/cat062/system-track-wgs84.json
 git commit -m "Add Cat 062 system track preset for Stockholm test case"
 git push
 ```
+
+Shared presets exist for all implemented categories: **015, 016, 021, 034, 048, 062, 065, and 240**.
 
 Local-only configs under `data/configurations/` are gitignored and stay on your machine.
 

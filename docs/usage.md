@@ -70,6 +70,34 @@ flowchart TD
 3. Click **Generate Hex** to preview the encoded binary data.
 4. Configure host/port and click **Send via UDP** (or TCP).
 
+### REST API (FastAPI / Swagger)
+
+Open `/docs` for interactive API documentation. Besides the generic `POST /api/send`, each implemented category has its own endpoint with a typed field schema and a ready-to-use **Example Value** in Swagger:
+
+| Category | Endpoint |
+|----------|----------|
+| 015 | `POST /api/send/15` |
+| 016 | `POST /api/send/16` |
+| 021 | `POST /api/send/21` |
+| 034 | `POST /api/send/34` |
+| 048 | `POST /api/send/48` |
+| 062 | `POST /api/send/62` |
+| 065 | `POST /api/send/65` |
+| 240 | `POST /api/send/240` |
+
+Request body shape:
+
+```json
+{
+  "fields": { "...": "category-specific fields with defaults" },
+  "host": "host.docker.internal",
+  "port": 8600,
+  "protocol": "udp"
+}
+```
+
+Use `POST /api/send` when you need one endpoint for all categories (category is inside `message`).
+
 ## Scenario builder
 
 1. Configure messages in the Message Editor tab.

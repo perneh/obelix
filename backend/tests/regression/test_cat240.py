@@ -3,7 +3,7 @@
 import pytest
 
 from tests.support.actions.regression_http import get, post
-from tests.support.builders.api import build_encode_request
+from tests.support.builders.api import build_category_send_request, build_encode_request
 from tests.support.builders.regression import cat240_summary_fields, fields_for_category
 from tests.support.udp_listener import udp_listener
 
@@ -55,6 +55,25 @@ def test_cat240_send_udp(address, port, udp_host):
             port,
             "/api/send",
             {**encode_payload, "host": udp_host, "port": listen_port, "protocol": "udp"},
+        )
+        assert sent["success"] is True
+        assert sent["protocol"] == "udp"
+        assert sent["bytes_sent"] == encoded["length"]
+        assert sock.recvfrom(65535)[0].hex().upper() == encoded["hex"]
+
+
+@pytest.mark.regression
+def test_cat240_send_category_udp(address, port, udp_host):
+    category = 240
+    fields = fields_for_category(category)
+    encoded = post(address, port, "/api/encode", build_encode_request(category=category, fields=fields))
+
+    with udp_listener() as (listen_port, sock):
+        sent = post(
+            address,
+            port,
+            f"/api/send/{category}",
+            build_category_send_request(fields=fields, host=udp_host, port=listen_port, protocol="udp"),
         )
         assert sent["success"] is True
         assert sent["protocol"] == "udp"

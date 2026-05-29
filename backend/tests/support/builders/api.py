@@ -9,6 +9,21 @@ def build_encode_request(*, category: int, fields: dict[str, Any]) -> dict[str, 
     return {"message": {"category": category, "fields": fields}}
 
 
+def build_category_send_request(
+    *,
+    fields: dict[str, Any],
+    host: str = "127.0.0.1",
+    port: int = 8600,
+    protocol: str = "udp",
+) -> dict[str, Any]:
+    return {
+        "fields": fields,
+        "host": host,
+        "port": port,
+        "protocol": protocol,
+    }
+
+
 def build_configuration_payload(
     *,
     config_id: str,
