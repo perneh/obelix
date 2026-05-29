@@ -4,61 +4,63 @@
 
 ```mermaid
 flowchart TD
-    START([Open Obelix in browser]) --> TAB{Choose tab}
+    start([Open Obelix]) --> tab{Tab}
 
-    TAB -->|Message Editor| CAT[Select ASTERIX category]
-    CAT --> FORM[Edit message fields]
-    FORM --> MA{Choose action}
+    tab -->|Message Editor| cat[Select category]
+    cat --> form[Edit fields]
+    form --> act{Action}
 
-    MA -->|Generate Hex| HEX[Preview hex / binary output]
-    MA -->|Send| CFG[Set host, port, UDP or TCP]
-    CFG --> SEND[Send single message]
-    SEND --> RX[(External receiver)]
+    act -->|Generate Hex| enc["POST /api/encode"]
+    enc --> hex[Preview hex]
 
-    MA -->|Save as Template| SAVT[Save to data/templates/]
+    act -->|Send UDP or TCP| snd["POST /api/send"]
+    snd --> rx[(Receiver)]
 
-    TAB -->|Scenario Builder| STEP[Add steps from current message]
-    STEP --> TIMING[Set delay, repeat, loop count, interval]
-    TIMING --> SC{Scenario control}
+    act -->|Save locally| savcfg["POST /api/configurations"]
 
-    SC -->|Start| RUN[Scenario runner sends sequence]
-    SC -->|Pause / Resume / Stop| RUN
-    RUN --> RX
+    tab -->|Scenario Builder| add[Add step from message]
+    add --> tune[Delay repeat loop motion]
+    tune --> ctl{Run control}
 
-    TIMING --> SAVS[Save to data/scenarios/]
+    ctl -->|Start Pause Stop| run[Scenario runner]
+    run --> snd
 
-    TAB -->|Templates & Scenarios| LIB[Browse saved items]
-    LIB -->|Load template| FORM
-    LIB -->|Load scenario| TIMING
+    tune --> savscn["POST /api/saved-scenarios"]
 
-    SAVT --> LIB
-    SAVS --> LIB
+    tab -->|Configurations| lib[Load saved items]
+    lib --> form
+    lib --> tune
+
+    savcfg --> lib
+    savscn --> lib
 ```
 
 ### Scenario execution flow
 
 ```mermaid
-stateDiagram-v2
-    [*] --> Idle
-    Idle --> Running: Start
-    Running --> Paused: Pause
-    Paused --> Running: Resume
-    Running --> Stopped: Stop
-    Running --> Completed: All loops finished
-    Paused --> Stopped: Stop
-    Stopped --> [*]
-    Completed --> [*]
+flowchart LR
+    idle((Idle)) -->|Start| running((Running))
+    running -->|Pause| paused((Paused))
+    paused -->|Resume| running
+    running -->|Stop| stopped((Stopped))
+    paused -->|Stop| stopped
+    running -->|Done| completed((Completed))
+```
 
-    state Running {
-        [*] --> NextStep
-        NextStep --> WaitDelay: delay_ms > 0
-        WaitDelay --> Encode
-        NextStep --> Encode: no delay
-        Encode --> SendRepeat: repeat N times
-        SendRepeat --> NextStep: more steps
-        SendRepeat --> LoopWait: scenario loop
-        LoopWait --> NextStep: interval elapsed
-    }
+```mermaid
+flowchart TD
+    step[Next step] --> wait{Delay?}
+    wait -->|Yes| delay[Wait delay_ms]
+    wait -->|No| encode[Encode ASTERIX]
+    delay --> encode
+    encode --> motion{Motion enabled?}
+    motion -->|Yes| ticks[Send ticks with new position]
+    motion -->|No| repeat[Send repeat count]
+    ticks --> more{More steps?}
+    repeat --> more
+    more -->|Yes| step
+    more -->|No| interval[Wait loop interval]
+    interval --> step
 ```
 
 ## Message editor
@@ -73,7 +75,7 @@ stateDiagram-v2
 1. Configure messages in the Message Editor tab.
 2. Switch to **Scenario Builder** and click **Add Step from Current Message**.
 3. Set delays, repeats, loop count and interval.
-4. For moving tracks (Cat 062, 048, 034): enable **Animate route** on a step, set the end waypoint, **Ticks** (number of updates), and **Interval (ms)** between updates.
+4. For moving tracks (Cat 015, 021, 034, 048, 062, 240): enable **Animate route** on a step, set the end waypoint, **Ticks** (number of updates), and **Interval (ms)** between updates.
 5. Click **Start** to run; use **Pause**, **Resume**, and **Stop** to control execution.
 
 ### Route animation
@@ -87,10 +89,14 @@ When **Send multiple messages** is enabled on a step, Obelix sends several messa
 
 | Category | Animated fields |
 |----------|-------------------|
-| **062** | WGS-84 lat/lon or Cartesian X/Y; optional time and derived velocity |
 | **015** | WGS-84 or range/azimuth (INCS target reports) |
-| **048** | Range (RHO) and azimuth (THETA) |
+| **021** | WGS-84 lat/lon; flight level and geometric height |
 | **034** | Antenna azimuth (sector crossing) |
+| **048** | Range (RHO) and azimuth (THETA) |
+| **062** | WGS-84 lat/lon or Cartesian X/Y; optional time and derived velocity |
+| **240** | Antenna azimuth (radar video / radial steps) |
+
+Categories **016** and **065** are supported for encoding and scenarios but have **no route animation** — use **Repeat** to send the same message multiple times.
 
 **Without motion:** set **Repeat** on the step to send the same message multiple times.
 
@@ -113,7 +119,7 @@ Scenarios are stored under `data/scenarios/` (local) or `scenarios/shared/` (rep
 
 ### Built-in Baltic exercise templates
 
-The **Scenario Builder** tab includes three realistic templates that exercise **all implemented categories** (015, 016, 034, 048, 062):
+The **Scenario Builder** tab includes three realistic templates that exercise **all implemented categories** (015, 016, 021, 034, 048, 062, 065, 240):
 
 | Template | Description |
 |----------|-------------|

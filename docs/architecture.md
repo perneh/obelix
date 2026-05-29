@@ -6,59 +6,56 @@ Obelix is a web-based tool for creating, editing and sending ASTERIX messages. I
 
 ```mermaid
 flowchart TB
-    subgraph Browser["Browser"]
-        UI["Frontend<br/>(HTML / CSS / JS)"]
+    subgraph browser [Browser]
+        ui[Frontend UI]
     end
 
-    subgraph Backend["FastAPI backend"]
-        API["REST API<br/>categories · encode · send · scenarios · storage"]
-        REG["Category registry<br/>(plugin pattern)"]
-        ENC["ASTERIX encoder<br/>FSPEC · data items · hex"]
-        RUN["Scenario runner<br/>async · timing · pause/stop"]
-        TRN["Transport<br/>UDP / TCP"]
-        STO["Storage<br/>JSON files"]
-        MDL["Pydantic models"]
+    subgraph backend [FastAPI backend]
+        api[REST API]
+        reg[Category registry]
+        enc[ASTERIX encoder]
+        run[Scenario runner]
+        trn[UDP and TCP transport]
+        sto[JSON storage]
     end
 
-    subgraph Categories["ASTERIX categories"]
-        C34["Cat 034<br/>Monoradar Service"]
-        C48["Cat 048<br/>Monoradar Target"]
+    subgraph plugins [Category plugins]
+        direction LR
+        c015[015]
+        c016[016]
+        c021[021]
+        c034[034]
+        c048[048]
+        c062[062]
+        c065[065]
+        c240[240]
     end
 
-    subgraph Persistence["File storage"]
-        TPL[("data/templates/")]
-        SCN[("data/scenarios/")]
+    subgraph disk [File storage]
+        cfg[(configurations)]
+        scn[(scenarios)]
     end
 
-    subgraph External["External systems"]
-        RX["UDP / TCP receiver<br/>e.g. radar simulator"]
-    end
+    rx[(External receiver)]
 
-    UI -->|"HTTP REST"| API
-    API --> MDL
-    API --> REG
-    API --> ENC
-    API --> RUN
-    API --> TRN
-    API --> STO
-
-    REG --> C34
-    REG --> C48
-    C34 --> ENC
-    C48 --> ENC
-
-    RUN --> ENC
-    RUN --> TRN
-    TRN -->|"binary ASTERIX"| RX
-
-    STO --> TPL
-    STO --> SCN
-
-    REG -.->|"field schema"| API
-    API -.->|"JSON schema"| UI
+    ui -->|HTTP| api
+    api --> reg
+    api --> enc
+    api --> run
+    api --> trn
+    api --> sto
+    reg --> plugins
+    plugins --> enc
+    run --> enc
+    run --> trn
+    trn -->|ASTERIX binary| rx
+    sto --> cfg
+    sto --> scn
+    reg -.->|field schema| api
+    api -.->|JSON schema| ui
 ```
 
-### Request flow (encode & send)
+### Request flow (encode and send)
 
 ```mermaid
 sequenceDiagram
@@ -71,19 +68,20 @@ sequenceDiagram
     participant RX as Receiver
 
     User->>UI: Edit fields
-    User->>UI: Generate Hex / Send
+    User->>UI: Generate Hex or Send
     UI->>API: POST /api/encode or /api/send
     API->>REG: Resolve category
-    REG->>ENC: encode_datablock(fields)
-    ENC-->>API: bytes / hex
+    REG->>ENC: encode_datablock
+    ENC-->>API: bytes and hex
 
-    alt Generate Hex
-        API-->>UI: hex + length
+    alt Generate Hex only
+        API-->>UI: hex and length
         UI-->>User: Show preview
     else Send message
-        API->>TRN: UDP or TCP
+        API->>TRN: UDP or TCP payload
         TRN->>RX: ASTERIX datablock
-        API-->>UI: success + bytes sent
+        API-->>UI: success and bytes_sent
+        UI-->>User: Confirm send
     end
 ```
 
@@ -122,12 +120,15 @@ obelix/
 
 4. **Async scenario runner** – Scenarios run as background asyncio tasks with pause/stop via events, supporting configurable delays, repetition, and looping.
 
-## Supported categories (v0.1)
+## Supported categories
 
 | Category | Name | Edition |
 |----------|------|---------|
 | 015 | INCS Target Reports | 1.1 |
 | 016 | INCS Configuration Reports | 1.0 |
+| 021 | ADS-B Reports | 2.7 |
 | 034 | Monoradar Service Messages | 1.29 |
 | 048 | Monoradar Target Reports | 1.32 |
 | 062 | System Track Data | 1.21 |
+| 065 | SDPS Service Status | 1.5 |
+| 240 | Radar Video Transmission | 1.3 |

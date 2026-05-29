@@ -10,17 +10,17 @@ Step-by-step guide for capturing and decoding ASTERIX messages sent by Obelix ru
 
 ```mermaid
 flowchart LR
-    Browser["Browser<br/>(host)"]
-    App["obelix-app<br/>(Docker)"]
-    RX["obelix-udp-receiver<br/>(Docker, optional)"]
-    Host["Host loopback<br/>127.0.0.1:8600"]
-    WS["Wireshark<br/>(host)"]
+    browser[Browser on host]
+    app[obelix-app container]
+    rx[obelix-udp-receiver optional]
+    host[host.docker.internal port 8600]
+    ws[Wireshark on host]
 
-    Browser -->|"HTTP :8000"| App
-    App -->|"UDP ASTERIX"| RX
-    App -->|"UDP ASTERIX"| Host
-    WS -.->|"capture"| RX
-    WS -.->|"capture"| Host
+    browser -->|HTTP port 8000| app
+    app -->|UDP ASTERIX| rx
+    app -->|UDP ASTERIX| host
+    ws -.->|capture| rx
+    ws -.->|capture| host
 ```
 
 When you click **Send via UDP** in the Obelix UI, the FastAPI backend inside `obelix-app` encodes the message and sends UDP from the **container network namespace** — not from your browser.
