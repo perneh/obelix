@@ -17,10 +17,10 @@ def test_catalog_lists_three_templates():
 def test_jas_template_uses_all_categories():
     scenario = build_template("jas-bromma-visby")
     categories = {step.message.category for step in scenario.steps}
-    assert categories == {15, 16, 34, 48, 62}
-    assert len(scenario.steps) == 6
+    assert categories == {15, 16, 21, 34, 48, 62}
+    assert len(scenario.steps) == 7
     motion_steps = [s for s in scenario.steps if s.motion and s.motion.enabled]
-    assert len(motion_steps) == 3
+    assert len(motion_steps) == 4
 
 
 @pytest.mark.unit

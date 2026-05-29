@@ -1,6 +1,6 @@
 /** Category route/motion helpers for the scenario builder. */
 
-export const MOTION_CATEGORIES = new Set([15, 34, 48, 62]);
+export const MOTION_CATEGORIES = new Set([15, 21, 34, 48, 62]);
 
 export function supportsMotion(category) {
   return MOTION_CATEGORIES.has(category);

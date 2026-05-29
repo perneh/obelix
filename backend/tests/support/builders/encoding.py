@@ -97,6 +97,48 @@ def build_cat048_registry_fields(
     }
 
 
+def build_cat021_adsb_fields(
+    *,
+    sac: int = 3,
+    sic: int = 1,
+    latitude_deg: float = 59.3293,
+    longitude_deg: float = 18.0686,
+    target_address: str = "4AC872",
+    callsign: str = "SVF101  ",
+    mode3a: int = 7777,
+    flight_level: float = 350.0,
+    atp: int = 0,
+    include_mode3a: int = 1,
+    include_target_identification: int = 1,
+) -> dict[str, Any]:
+    return {
+        "data_source": {"sac": sac, "sic": sic},
+        "target_report_descriptor": {
+            "atp": atp,
+            "arc": 0,
+            "rc": 0,
+            "rab": 0,
+            "include_extension1": 1,
+            "dcr": 0,
+            "gbs": 0,
+            "sim": 0,
+            "tst": 0,
+        },
+        "time_of_applicability_position": 36000.0,
+        "position_resolution": "high",
+        "wgs84": {"latitude_deg": latitude_deg, "longitude_deg": longitude_deg},
+        "target_address": target_address,
+        "include_mode3a": include_mode3a,
+        "mode3a": mode3a,
+        "include_flight_level": 1,
+        "flight_level": flight_level,
+        "include_geometric_height": 1,
+        "geometric_height_ft": flight_level * 100.0,
+        "include_target_identification": include_target_identification,
+        "target_identification": callsign,
+    }
+
+
 def build_cat062_minimal_fields(
     *,
     sac: int = 1,

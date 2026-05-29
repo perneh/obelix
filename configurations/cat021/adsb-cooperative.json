@@ -1,0 +1,31 @@
+{
+  "category": 21,
+  "name": "ADS-B report – cooperative aircraft",
+  "description": "High-resolution WGS-84 ADS-B target report with ICAO address, Mode 3/A, flight level, and callsign.",
+  "fields": {
+    "data_source": { "sac": 3, "sic": 1 },
+    "target_report_descriptor": {
+      "atp": 0,
+      "arc": 0,
+      "rc": 0,
+      "rab": 0,
+      "include_extension1": 1,
+      "dcr": 0,
+      "gbs": 0,
+      "sim": 0,
+      "tst": 0
+    },
+    "time_of_applicability_position": 36000.0,
+    "position_resolution": "high",
+    "wgs84": { "latitude_deg": 59.3544, "longitude_deg": 17.9417 },
+    "target_address": "4AC872",
+    "include_mode3a": 1,
+    "mode3a": 7777,
+    "include_flight_level": 1,
+    "flight_level": 350.0,
+    "include_geometric_height": 1,
+    "geometric_height_ft": 35000.0,
+    "include_target_identification": 1,
+    "target_identification": "SVF101  "
+  }
+}

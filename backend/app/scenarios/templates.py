@@ -29,6 +29,7 @@ from app.scenarios.geo import (
 SDPS_SAC, SDPS_SIC = 1, 1
 INCS_SAC, INCS_SIC = 1, 2
 RADAR_SAC, RADAR_SIC = 2, 1
+ADSB_SAC, ADSB_SIC = 3, 1
 
 
 @dataclass
@@ -53,7 +54,8 @@ def list_template_catalog() -> list[dict[str, Any]]:
             "name": "JAS 39 – Bromma → Visby",
             "description": (
                 "Friendly Gripen transit using all ASTERIX categories: INCS config, "
-                "monoradar service messages, plots, INCS target report, and SDPS system track."
+                "monoradar service messages, plots, INCS target report, ADS-B report, "
+                "and SDPS system track."
             ),
             "aircraft": "JAS 39 Gripen",
             "route": "ESSB Bromma → ESSV Visby",
@@ -63,7 +65,7 @@ def list_template_catalog() -> list[dict[str, Any]]:
             "name": "Hostile MiG – Kaliningrad → Visby",
             "description": (
                 "Non-cooperative hostile track from Kaliningrad toward Visby. "
-                "Full radar/INCS/SDPS picture across all implemented categories."
+                "Full radar/INCS/SDPS/ADS-B picture across all implemented categories."
             ),
             "aircraft": "MiG-29 (hostile)",
             "route": "Kaliningrad → ESSV Visby",
@@ -73,7 +75,8 @@ def list_template_catalog() -> list[dict[str, Any]]:
             "name": "Baltic exercise – JAS + MiG combined",
             "description": (
                 "Combined air picture: friendly JAS on Stockholm–Visby route while "
-                "hostile MiG approaches from Kaliningrad. Interleaved ASTERIX traffic."
+                "hostile MiG approaches from Kaliningrad. Interleaved ASTERIX traffic "
+                "including ADS-B reports."
             ),
             "aircraft": "JAS 39 + MiG-29",
             "route": "Baltic Sea airspace",
@@ -337,6 +340,57 @@ def _step_015_incs(
     )
 
 
+def _step_021_adsb(
+    name: str,
+    start: tuple[float, float],
+    end: tuple[float, float],
+    p: TemplateParams,
+    step_id: str,
+    *,
+    target_address: str,
+    callsign: str,
+    mode3a: int = 0,
+    flight_level: float = 350.0,
+    atp: int = 0,
+    include_mode3a: int = 1,
+    include_target_identification: int = 1,
+    delay_ms: int = 0,
+) -> ScenarioStep:
+    return _step(
+        step_id,
+        name,
+        21,
+        {
+            "data_source": {"sac": ADSB_SAC, "sic": ADSB_SIC},
+            "target_report_descriptor": {
+                "atp": atp,
+                "arc": 0,
+                "rc": 0,
+                "rab": 0,
+                "include_extension1": 1,
+                "dcr": 0,
+                "gbs": 0,
+                "sim": 0,
+                "tst": 0,
+            },
+            "time_of_applicability_position": 36000.0,
+            "position_resolution": "high",
+            "wgs84": {"latitude_deg": start[0], "longitude_deg": start[1]},
+            "target_address": target_address,
+            "include_mode3a": include_mode3a,
+            "mode3a": mode3a,
+            "include_flight_level": 1,
+            "flight_level": flight_level,
+            "include_geometric_height": 1,
+            "geometric_height_ft": flight_level * 100.0,
+            "include_target_identification": include_target_identification,
+            "target_identification": callsign,
+        },
+        motion=_motion_wgs(start[0], start[1], end[0], end[1], p),
+        delay_ms=delay_ms,
+    )
+
+
 def _build_jas_bromma_visby(p: TemplateParams) -> Scenario:
     heading = bearing_deg(*BROMMA, *VISBY)
     steps = [
@@ -372,11 +426,23 @@ def _build_jas_bromma_visby(p: TemplateParams) -> Scenario:
             "jas-015",
             delay_ms=200,
         ),
+        _step_021_adsb(
+            "JAS 39 ADS-B report (Cat 021)",
+            BROMMA,
+            VISBY,
+            p,
+            "jas-021",
+            target_address="4AC872",
+            callsign="SVF101  ",
+            mode3a=p.jas_mode3a,
+            flight_level=p.jas_flight_level,
+            delay_ms=200,
+        ),
     ]
     return Scenario(
         id="jas-bromma-visby",
         name="JAS 39 – Bromma → Visby",
-        description="Friendly Gripen – full ASTERIX category coverage (015/016/034/048/062).",
+        description="Friendly Gripen – full ASTERIX category coverage (015/016/021/034/048/062).",
         transport=_transport(p),
         loop_count=p.loop_count,
         interval_ms=5000,
@@ -420,11 +486,25 @@ def _build_mig_kaliningrad_visby(p: TemplateParams) -> Scenario:
             pair_id=2,
             delay_ms=200,
         ),
+        _step_021_adsb(
+            "Hostile MiG ADS-B (anonymous, Cat 021)",
+            KALININGRAD,
+            VISBY,
+            p,
+            "mig-021",
+            target_address="000001",
+            callsign="",
+            atp=3,
+            include_mode3a=0,
+            include_target_identification=0,
+            flight_level=p.mig_flight_level,
+            delay_ms=200,
+        ),
     ]
     return Scenario(
         id="mig-kaliningrad-visby",
         name="Hostile MiG – Kaliningrad → Visby",
-        description="Non-cooperative hostile track – all ASTERIX categories (015/016/034/048/062).",
+        description="Non-cooperative hostile track – all ASTERIX categories (015/016/021/034/048/062).",
         transport=_transport(p),
         loop_count=p.loop_count,
         interval_ms=5000,
@@ -454,6 +534,18 @@ def _build_baltic_combined(p: TemplateParams) -> Scenario:
         _step_015_incs(
             "JAS INCS (Cat 015)", p.jas_track_number, BROMMA, VISBY, p, "bal-jas-015", delay_ms=100
         ),
+        _step_021_adsb(
+            "JAS ADS-B (Cat 021)",
+            BROMMA,
+            VISBY,
+            p,
+            "bal-jas-021",
+            target_address="4AC872",
+            callsign="SVF101  ",
+            mode3a=p.jas_mode3a,
+            flight_level=p.jas_flight_level,
+            delay_ms=100,
+        ),
         _step_034_sector(mig_h, "bal-034-mig-sector", delay_ms=400),
         _step_062_track(
             "Hostile MiG SDPS track (Cat 062)",
@@ -479,13 +571,27 @@ def _build_baltic_combined(p: TemplateParams) -> Scenario:
             pair_id=2,
             delay_ms=100,
         ),
+        _step_021_adsb(
+            "MiG ADS-B anonymous (Cat 021)",
+            KALININGRAD,
+            VISBY,
+            p,
+            "bal-mig-021",
+            target_address="000001",
+            callsign="",
+            atp=3,
+            include_mode3a=0,
+            include_target_identification=0,
+            flight_level=p.mig_flight_level,
+            delay_ms=100,
+        ),
     ]
     return Scenario(
         id="baltic-combined",
         name="Baltic exercise – JAS + MiG",
         description=(
             "Combined air picture: JAS from Bromma and hostile MiG from Kaliningrad, "
-            "all categories 015/016/034/048/062."
+            "all categories 015/016/021/034/048/062."
         ),
         transport=_transport(p),
         loop_count=p.loop_count,

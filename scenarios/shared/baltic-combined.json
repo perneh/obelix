@@ -1,7 +1,7 @@
 {
   "id": "baltic-combined",
   "name": "Baltic exercise – JAS + MiG",
-  "description": "Combined air picture: JAS from Bromma and hostile MiG from Kaliningrad, all categories 015/016/034/048/062.",
+  "description": "Combined air picture: JAS from Bromma and hostile MiG from Kaliningrad, all categories 015/016/021/034/048/062.",
   "transport": {
     "host": "host.docker.internal",
     "port": 8600,
@@ -278,6 +278,83 @@
       }
     },
     {
+      "id": "bal-jas-021",
+      "name": "JAS ADS-B (Cat 021)",
+      "message": {
+        "category": 21,
+        "fields": {
+          "data_source": {
+            "sac": 3,
+            "sic": 1
+          },
+          "target_report_descriptor": {
+            "atp": 0,
+            "arc": 0,
+            "rc": 0,
+            "rab": 0,
+            "include_extension1": 1,
+            "dcr": 0,
+            "gbs": 0,
+            "sim": 0,
+            "tst": 0
+          },
+          "time_of_applicability_position": 36000.0,
+          "position_resolution": "high",
+          "wgs84": {
+            "latitude_deg": 59.3544,
+            "longitude_deg": 17.9417
+          },
+          "target_address": "4AC872",
+          "include_mode3a": 1,
+          "mode3a": 7777,
+          "include_flight_level": 1,
+          "flight_level": 350.0,
+          "include_geometric_height": 1,
+          "geometric_height_ft": 35000.0,
+          "include_target_identification": 1,
+          "target_identification": "SVF101  "
+        }
+      },
+      "delay_ms": 100,
+      "repeat": 1,
+      "motion": {
+        "enabled": true,
+        "mode": "direction",
+        "waypoints": [
+          {
+            "latitude_deg": 59.3544,
+            "longitude_deg": 17.9417,
+            "x_m": null,
+            "y_m": null,
+            "rho_nm": null,
+            "theta_deg": null,
+            "range_m": null,
+            "azimuth": null,
+            "geometric_altitude_ft": null,
+            "flight_level": null
+          },
+          {
+            "latitude_deg": 57.6628,
+            "longitude_deg": 18.3462,
+            "x_m": null,
+            "y_m": null,
+            "rho_nm": null,
+            "theta_deg": null,
+            "range_m": null,
+            "azimuth": null,
+            "geometric_altitude_ft": null,
+            "flight_level": null
+          }
+        ],
+        "heading_deg": 172.70725633149573,
+        "step_distance": 3212.849380981974,
+        "ticks": 60,
+        "tick_interval_ms": 2000,
+        "update_time": true,
+        "derive_velocity": true
+      }
+    },
+    {
       "id": "bal-034-mig-sector",
       "name": "Sector crossing 339° (Cat 034)",
       "message": {
@@ -494,6 +571,83 @@
         "tick_interval_ms": 2000,
         "update_time": true,
         "derive_velocity": false
+      }
+    },
+    {
+      "id": "bal-mig-021",
+      "name": "MiG ADS-B anonymous (Cat 021)",
+      "message": {
+        "category": 21,
+        "fields": {
+          "data_source": {
+            "sac": 3,
+            "sic": 1
+          },
+          "target_report_descriptor": {
+            "atp": 3,
+            "arc": 0,
+            "rc": 0,
+            "rab": 0,
+            "include_extension1": 1,
+            "dcr": 0,
+            "gbs": 0,
+            "sim": 0,
+            "tst": 0
+          },
+          "time_of_applicability_position": 36000.0,
+          "position_resolution": "high",
+          "wgs84": {
+            "latitude_deg": 54.71,
+            "longitude_deg": 20.5117
+          },
+          "target_address": "000001",
+          "include_mode3a": 0,
+          "mode3a": 0,
+          "include_flight_level": 1,
+          "flight_level": 410.0,
+          "include_geometric_height": 1,
+          "geometric_height_ft": 41000.0,
+          "include_target_identification": 0,
+          "target_identification": ""
+        }
+      },
+      "delay_ms": 100,
+      "repeat": 1,
+      "motion": {
+        "enabled": true,
+        "mode": "direction",
+        "waypoints": [
+          {
+            "latitude_deg": 54.71,
+            "longitude_deg": 20.5117,
+            "x_m": null,
+            "y_m": null,
+            "rho_nm": null,
+            "theta_deg": null,
+            "range_m": null,
+            "azimuth": null,
+            "geometric_altitude_ft": null,
+            "flight_level": null
+          },
+          {
+            "latitude_deg": 57.6628,
+            "longitude_deg": 18.3462,
+            "x_m": null,
+            "y_m": null,
+            "rho_nm": null,
+            "theta_deg": null,
+            "range_m": null,
+            "azimuth": null,
+            "geometric_altitude_ft": null,
+            "flight_level": null
+          }
+        ],
+        "heading_deg": 338.6941696479472,
+        "step_distance": 6009.8687791215525,
+        "ticks": 60,
+        "tick_interval_ms": 2000,
+        "update_time": true,
+        "derive_velocity": true
       }
     }
   ],

@@ -47,6 +47,10 @@ def apply_step_motion(
         base_time = float(base_fields.get("time_of_track", 0.0))
         fields["time_of_track"] = base_time + tick * motion.tick_interval_ms / 1000.0
 
+    if motion.update_time and "time_of_applicability_position" in fields:
+        base_time = float(base_fields.get("time_of_applicability_position", 0.0))
+        fields["time_of_applicability_position"] = base_time + tick * motion.tick_interval_ms / 1000.0
+
     if motion.derive_velocity and category == 62:
         if tick > 0:
             prev = (
@@ -85,6 +89,19 @@ def _waypoint_at_direction(
                 geometric_altitude_ft=start.geometric_altitude_ft,
                 flight_level=start.flight_level,
             )
+        dn = distance * math.cos(heading_rad)
+        de = distance * math.sin(heading_rad)
+        lat = (start.latitude_deg or 0.0) + dn / _WGS84_M_PER_DEG_LAT
+        lon_base = math.cos(math.radians(start.latitude_deg or 0.0)) * _WGS84_M_PER_DEG_LAT
+        lon = (start.longitude_deg or 0.0) + de / lon_base if lon_base else (start.longitude_deg or 0.0)
+        return MotionWaypoint(
+            latitude_deg=lat,
+            longitude_deg=lon,
+            geometric_altitude_ft=start.geometric_altitude_ft,
+            flight_level=start.flight_level,
+        )
+
+    if category == 21:
         dn = distance * math.cos(heading_rad)
         de = distance * math.sin(heading_rad)
         lat = (start.latitude_deg or 0.0) + dn / _WGS84_M_PER_DEG_LAT
@@ -201,6 +218,17 @@ def _apply_waypoint_to_fields(
             fields["geometric_altitude_ft"] = waypoint.geometric_altitude_ft
         if waypoint.flight_level is not None:
             fields["flight_level"] = waypoint.flight_level
+    elif category == 21:
+        if waypoint.latitude_deg is not None or waypoint.longitude_deg is not None:
+            wgs = fields.setdefault("wgs84", {})
+            if waypoint.latitude_deg is not None:
+                wgs["latitude_deg"] = waypoint.latitude_deg
+            if waypoint.longitude_deg is not None:
+                wgs["longitude_deg"] = waypoint.longitude_deg
+        if waypoint.flight_level is not None:
+            fields["flight_level"] = waypoint.flight_level
+        if waypoint.geometric_altitude_ft is not None:
+            fields["geometric_height_ft"] = waypoint.geometric_altitude_ft
     elif category == 48:
         if waypoint.rho_nm is not None or waypoint.theta_deg is not None:
             pos = fields.setdefault("position", {})
@@ -294,6 +322,14 @@ def waypoint_from_fields(category: int, fields: dict[str, Any]) -> MotionWaypoin
             range_m=float(ra.get("range_m", 0.0)),
             azimuth=float(ra.get("azimuth_deg", 0.0)),
         )
+    if category == 21:
+        wgs = fields.get("wgs84", {})
+        return MotionWaypoint(
+            latitude_deg=float(wgs.get("latitude_deg", 0.0)),
+            longitude_deg=float(wgs.get("longitude_deg", 0.0)),
+            flight_level=float(fields.get("flight_level", 0.0)) or None,
+            geometric_altitude_ft=float(fields.get("geometric_height_ft", 0.0)) or None,
+        )
     if category == 34:
         return MotionWaypoint(azimuth=float(fields.get("azimuth", 0.0)))
     return MotionWaypoint()
@@ -342,6 +378,13 @@ def default_end_waypoint(category: int, fields: dict[str, Any]) -> MotionWaypoin
         return MotionWaypoint(
             range_m=(start.range_m or 0.0) + 10_000.0,
             azimuth=((start.azimuth or 0.0) + 45.0) % 360.0,
+        )
+    if category == 21:
+        return MotionWaypoint(
+            latitude_deg=(start.latitude_deg or 0.0) + 0.08,
+            longitude_deg=(start.longitude_deg or 0.0) + 0.12,
+            flight_level=start.flight_level,
+            geometric_altitude_ft=start.geometric_altitude_ft,
         )
     if category == 34:
         return MotionWaypoint(azimuth=((start.azimuth or 0.0) + 90.0) % 360.0)
