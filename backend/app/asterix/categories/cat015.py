@@ -12,6 +12,8 @@ from app.asterix.base import (
     build_fspec,
     clamp,
 )
+from app.asterix.categories.cat015_uap import CAT015_UAP
+from app.asterix.uap import uap_to_dicts
 
 _TIME_LSB = 1.0 / 128.0
 _WGS_LSB = 180.0 / (2**31)
@@ -88,6 +90,8 @@ class Cat015(AsterixCategory):
                     field_type=FieldType.ENUM,
                     default=0,
                     description="0 = periodic, 1 = event driven",
+                    uap_frn=2,
+                    item_id="000",
                     options=[
                         {"value": 0, "label": "Periodic report"},
                         {"value": 1, "label": "Event driven report"},
@@ -159,6 +163,8 @@ class Cat015(AsterixCategory):
                     field_type=FieldType.ENUM,
                     default=2,
                     options=_POSITION_TYPES,
+                    uap_frn=13,
+                    item_id="600",
                 ),
                 FieldDefinition(
                     id="wgs84",
@@ -216,6 +222,7 @@ class Cat015(AsterixCategory):
                     ],
                 ),
             ],
+            uap=uap_to_dicts(CAT015_UAP),
         )
 
     @classmethod

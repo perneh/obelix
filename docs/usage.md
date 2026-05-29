@@ -130,15 +130,23 @@ API: `GET /api/scenario-templates`, `POST /api/scenario-templates/{id}/build` wi
 
 See [scenarios/README.md](../scenarios/README.md) for regenerating shared JSON from Python.
 
-### Export / import JSON
+### Export / import JSON files
 
-Scenarios are JSON files. From **Scenario Builder → JSON export / import**:
+Scenarios are JSON files on disk (`data/scenarios/` locally, `scenarios/shared/` in git). From **Scenario Builder**:
 
-1. **Export JSON** — downloads `{scenario-id}.json` for editing in VS Code or any editor
-2. **Import JSON file** — pick an edited file; Obelix validates structure and categories
-3. **JSON editor** — paste or edit inline, then **Apply JSON**
+| Action | Result |
+|--------|--------|
+| **Download .json file** | Browser download — edit in VS Code or any editor |
+| **Save locally & download** | Writes `data/scenarios/{id}.json` and downloads a copy |
+| **Save locally** | Writes to `data/scenarios/` only |
+| **Import .json file** | Load an edited file into the builder (validated) |
+| **Apply JSON** | Load from the inline JSON editor |
 
-The same file format is used in `scenarios/shared/` and `data/scenarios/`. Validation runs via `POST /api/scenarios/validate` before loading into the builder.
+From **Configurations & Scenarios**, use **Export** on a saved scenario or **Import .json file**.
+
+API download: `GET /api/saved-scenarios/{id}/file` returns the same JSON as on disk.
+
+**Typical workflow:** Download → edit `{id}.json` externally → Import .json → Run (or save back to `data/scenarios/`).
 
 ## Testing a UDP receiver
 

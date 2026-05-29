@@ -215,16 +215,22 @@
       </div>
 
       <div class="card scenario-json-card">
-        <h3>JSON export / import</h3>
+        <h3>Edit scenario as JSON file</h3>
         <p class="muted section-desc">
-          Scenarios are stored as JSON. Export to edit in VS Code or another editor, then import the file back.
+          Scenarios are JSON files (same format as <code>data/scenarios/</code> and
+          <code>scenarios/shared/</code>). Export to edit in VS Code, vim, or any editor — then import back.
         </p>
         <div class="actions">
-          <button type="button" id="btn-export-scenario" class="btn secondary">Export JSON</button>
-          <button type="button" id="btn-import-scenario" class="btn secondary">Import JSON file</button>
+          <button type="button" id="btn-export-scenario" class="btn secondary">Download .json file</button>
+          <button type="button" id="btn-save-export-scenario" class="btn secondary">Save locally &amp; download</button>
+          <button type="button" id="btn-import-scenario" class="btn secondary">Import .json file</button>
           <button type="button" id="btn-sync-json-editor" class="btn secondary">Refresh editor</button>
           <button type="button" id="btn-apply-json-editor" class="btn primary">Apply JSON</button>
         </div>
+        <p class="field-hint">
+          <strong>Workflow:</strong> Download .json → edit externally → Import .json or paste below → Apply JSON → Run.
+          Use <em>Save locally &amp; download</em> to write to <code>data/scenarios/</code> and get a copy on disk.
+        </p>
         <input type="file" id="scenario-import-file" accept=".json,application/json" hidden>
         <label class="json-editor-label" for="scenario-json-editor">Scenario JSON</label>
         <textarea id="scenario-json-editor" class="json-editor" rows="14" spellcheck="false"
@@ -242,7 +248,8 @@
           <button type="button" id="btn-pause-scenario" class="btn secondary" disabled>Pause</button>
           <button type="button" id="btn-resume-scenario" class="btn secondary" disabled>Resume</button>
           <button type="button" id="btn-stop-scenario" class="btn danger" disabled>Stop</button>
-          <button type="button" id="btn-save-scenario" class="btn secondary">Save Scenario</button>
+          <button type="button" id="btn-save-scenario" class="btn secondary">Save locally</button>
+          <button type="button" id="btn-export-scenario-run" class="btn secondary">Download .json</button>
         </div>
         <div class="scenario-status-wrap">
           <h4>Status</h4>
@@ -268,9 +275,9 @@
         </div>
         <div class="card">
           <h2>Saved Scenarios</h2>
-          <p class="muted">Repository scenarios live in <code>scenarios/shared/</code>. Local saves go to <code>data/scenarios/</code>. Built-in templates are loaded from the Scenario Builder tab.</p>
+          <p class="muted">Repository scenarios: <code>scenarios/shared/*.json</code>. Local: <code>data/scenarios/*.json</code>. Edit files externally or use export/import below.</p>
           <div class="actions library-scenario-actions">
-            <button type="button" id="btn-library-import-scenario" class="btn secondary btn-sm">Import JSON file</button>
+            <button type="button" id="btn-library-import-scenario" class="btn secondary btn-sm">Import .json file</button>
           </div>
           <input type="file" id="scenario-library-import-file" accept=".json,application/json" hidden>
           <ul id="saved-scenario-list" class="item-list"></ul>

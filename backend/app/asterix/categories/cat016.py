@@ -12,6 +12,8 @@ from app.asterix.base import (
     build_fspec,
     clamp,
 )
+from app.asterix.categories.cat016_uap import CAT016_UAP
+from app.asterix.uap import uap_to_dicts
 
 _TIME_LSB = 1.0 / 128.0
 _WGS_LSB = 180.0 / (2**31)
@@ -180,6 +182,7 @@ class Cat016(AsterixCategory):
                     ],
                 ),
             ],
+            uap=uap_to_dicts(CAT016_UAP),
         )
 
     @classmethod

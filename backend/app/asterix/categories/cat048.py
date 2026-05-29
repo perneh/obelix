@@ -12,6 +12,8 @@ from app.asterix.base import (
     build_fspec,
     clamp,
 )
+from app.asterix.categories.cat048_uap import CAT048_UAP
+from app.asterix.uap import uap_to_dicts
 
 
 class Cat048(AsterixCategory):
@@ -92,6 +94,7 @@ class Cat048(AsterixCategory):
                     item_id="070",
                 ),
             ],
+            uap=uap_to_dicts(CAT048_UAP),
         )
 
     @classmethod

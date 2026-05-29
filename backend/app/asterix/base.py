@@ -16,6 +16,7 @@ class FieldType(str, Enum):
     FLOAT = "float"
     ENUM = "enum"
     COMPOUND = "compound"
+    STRING = "string"
 
 
 @dataclass
@@ -34,6 +35,7 @@ class FieldDefinition:
     fields: list[FieldDefinition] = field(default_factory=list)
     uap_frn: int | None = None
     item_id: str | None = None
+    include_flag: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         result: dict[str, Any] = {
@@ -53,6 +55,12 @@ class FieldDefinition:
             result["options"] = self.options
         if self.fields:
             result["fields"] = [f.to_dict() for f in self.fields]
+        if self.uap_frn is not None:
+            result["uap_frn"] = self.uap_frn
+        if self.item_id:
+            result["item_id"] = self.item_id
+        if self.include_flag:
+            result["include_flag"] = True
         return result
 
 
@@ -65,15 +73,19 @@ class CategoryDefinition:
     edition: str
     description: str
     fields: list[FieldDefinition]
+    uap: list[dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        result: dict[str, Any] = {
             "category": self.category,
             "name": self.name,
             "edition": self.edition,
             "description": self.description,
             "fields": [f.to_dict() for f in self.fields],
         }
+        if self.uap:
+            result["uap"] = self.uap
+        return result
 
 
 class AsterixCategory(ABC):

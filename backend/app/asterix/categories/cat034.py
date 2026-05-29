@@ -12,6 +12,8 @@ from app.asterix.base import (
     build_fspec,
     clamp,
 )
+from app.asterix.categories.cat034_uap import CAT034_UAP
+from app.asterix.uap import uap_to_dicts
 
 MESSAGE_TYPES = [
     {"value": 1, "label": "North marker message"},
@@ -85,6 +87,7 @@ class Cat034(AsterixCategory):
                     item_id="020",
                 ),
             ],
+            uap=uap_to_dicts(CAT034_UAP),
         )
 
     @classmethod

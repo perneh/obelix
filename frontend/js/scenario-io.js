@@ -37,6 +37,13 @@ export function downloadScenarioJson(scenario) {
   URL.revokeObjectURL(url);
 }
 
+/** Trigger browser download of a saved scenario (from data/scenarios or scenarios/shared). */
+export async function downloadScenarioFileFromApi(scenarioId, api) {
+  const scenario = await api(`/saved-scenarios/${encodeURIComponent(scenarioId)}`);
+  downloadScenarioJson(scenario);
+  return scenario;
+}
+
 export function formatApiError(err) {
   if (!err || typeof err !== "object") {
     return String(err);

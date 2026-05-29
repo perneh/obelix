@@ -20,7 +20,9 @@ import {
 } from "./scenario-templates.js";
 import {
   downloadScenarioJson,
+  downloadScenarioFileFromApi,
   formatApiError,
+  scenarioFilename,
   scenarioToJsonString,
   validateScenarioJson,
 } from "./scenario-io.js";
@@ -178,22 +180,161 @@ function buildDefaults(fields) {
 
 function renderForm() {
   const form = document.getElementById("message-form");
-  form.innerHTML = state.categoryDef.fields.map((field) => renderField(field)).join("");
+  const uapHtml = state.categoryDef?.uap?.length ? renderUapPanel(state.categoryDef) : "";
+  form.innerHTML = uapHtml + state.categoryDef.fields.map((field) => renderField(field)).join("");
 
   form.querySelectorAll("[data-field]").forEach((el) => {
     el.addEventListener("change", onFieldChange);
     el.addEventListener("input", onFieldChange);
   });
+
+  form.querySelectorAll("[data-uap-jump]").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      scrollToFormField(link.dataset.uapJump);
+    });
+  });
+
+  form.querySelectorAll("[data-uap-jump-row]").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      scrollToUapRow(link.dataset.uapJumpRow);
+    });
+  });
+}
+
+function uapRowAnchorId(frn) {
+  return `uap-frn-${frn}`;
+}
+
+function scrollToUapRow(frn) {
+  const el = document.getElementById(uapRowAnchorId(frn));
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  el.classList.add("uap-row-highlight");
+  window.setTimeout(() => el.classList.remove("uap-row-highlight"), 2000);
+}
+
+function fieldAnchorId(fieldId) {
+  return `field-${fieldId}`;
+}
+
+function scrollToFormField(fieldId) {
+  const el = document.getElementById(fieldAnchorId(fieldId));
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  el.classList.add("field-highlight");
+  window.setTimeout(() => el.classList.remove("field-highlight"), 2000);
+}
+
+function uapItemLabel(category, itemId) {
+  if (!itemId) return "—";
+  const prefix = itemId === "RE" || itemId === "SP" ? "I" : `I${String(category).padStart(3, "0")}/`;
+  return `${prefix}${itemId}`;
+}
+
+function renderFormFieldNames(entry) {
+  const ids = entry.anchor_field_ids?.length
+    ? entry.anchor_field_ids
+    : entry.field_id
+      ? [entry.field_id]
+      : [];
+  if (!ids.length) {
+    return '<span class="muted">—</span>';
+  }
+  return ids.map((id) => `<code>${id}</code>`).join(" ");
+}
+
+function renderDataItemLink(entry) {
+  const mandatory = entry.mandatory ? ' <span class="uap-mandatory">*</span>' : "";
+  const label = entry.name;
+  const anchors = entry.anchor_field_ids?.length
+    ? entry.anchor_field_ids
+    : entry.field_id
+      ? [entry.field_id]
+      : [];
+
+  if (anchors.length) {
+    const target = anchors[0];
+    return `<a href="#${fieldAnchorId(target)}" class="uap-data-item-link" data-uap-jump="${target}">${label}</a>${mandatory}`;
+  }
+
+  return `<a href="#${uapRowAnchorId(entry.frn)}" class="uap-data-item-link uap-data-item-link-muted" data-uap-jump-row="${entry.frn}" title="Not editable in Obelix — scroll to UAP row">${label}</a>${mandatory}`;
+}
+
+function renderUapPanel(categoryDef) {
+  const cat = categoryDef.category;
+  const implemented = categoryDef.uap.filter((e) => e.implemented).length;
+  const maxFrn = categoryDef.uap.reduce((max, e) => Math.max(max, e.frn), 0);
+  const rows = categoryDef.uap
+    .map((entry) => {
+      const status = entry.spare
+        ? '<span class="uap-status uap-spare">Spare</span>'
+        : entry.implemented
+          ? '<span class="uap-status uap-ok">Editor</span>'
+          : '<span class="uap-status uap-missing">Spec only</span>';
+      const item = uapItemLabel(cat, entry.item_id);
+      const dataItemLink = renderDataItemLink(entry);
+      const fieldNames = renderFormFieldNames(entry);
+      const rowClass = entry.implemented ? "uap-row-implemented" : entry.spare ? "uap-row-spare" : "";
+      return `<tr class="${rowClass}" id="${uapRowAnchorId(entry.frn)}">
+        <td><strong>${entry.frn}</strong></td>
+        <td>${item}</td>
+        <td class="uap-data-item-cell">${dataItemLink}</td>
+        <td>${entry.length}</td>
+        <td class="uap-field-cell">${fieldNames}</td>
+        <td>${status}</td>
+      </tr>`;
+    })
+    .join("");
+
+  return `
+    <div class="uap-panel" id="uap-panel">
+      <h3>User Application Profile (FRN 1–${maxFrn})</h3>
+      <p class="muted section-desc">
+        Eurocontrol Cat ${cat} ed. ${categoryDef.edition}.
+        ${implemented} of ${categoryDef.uap.length} FRN positions link to editable fields below.
+        Click a <strong>data item</strong> name to jump to the editor (or back to this row if not yet implemented).
+      </p>
+      <div class="uap-table-wrap">
+        <table class="uap-table">
+          <thead>
+            <tr>
+              <th>FRN</th>
+              <th>Item</th>
+              <th>Data item</th>
+              <th>Len</th>
+              <th>Form field</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function frnBadge(field) {
+  if (field.uap_frn == null) return "";
+  const cat = state.selectedCategory ?? "";
+  const item = field.item_id ? ` · ${uapItemLabel(cat, field.item_id)}` : "";
+  return `<a href="#${fieldAnchorId(field.id)}" class="frn-badge" data-uap-jump="${field.id}" title="FRN ${field.uap_frn}">FRN ${field.uap_frn}${item}</a>`;
 }
 
 function renderField(field, parentId = null) {
   const fieldKey = parentId ? `${parentId}.${field.id}` : field.id;
+  const badge = parentId ? "" : frnBadge(field);
+  const anchorAttr = parentId ? "" : ` id="${fieldAnchorId(field.id)}"`;
 
   if (field.type === "compound") {
+    const includeHint = field.include_flag
+      ? `<p class="field-hint">Toggle <strong>Include in FSPEC</strong> to set this FRN in the message.</p>`
+      : "";
     return `
-      <div class="field-group">
-        <label>${field.label}</label>
+      <div class="field-group${field.include_flag ? " field-group-optional-frn" : ""}"${anchorAttr}${field.uap_frn ? ` data-uap-frn="${field.uap_frn}"` : ""}>
+        <div class="field-label-row">${badge}<label>${field.label}</label></div>
         ${field.description ? `<div class="field-desc">${field.description}</div>` : ""}
+        ${includeHint}
         <div class="compound-fields">
           ${field.fields.map((sub) => renderField(sub, field.id)).join("")}
         </div>
@@ -206,17 +347,26 @@ function renderField(field, parentId = null) {
 
   if (field.type === "enum") {
     return `
-      <div class="field-group">
-        <label for="field-${fieldKey}">${field.label}</label>
+      <div class="field-group"${anchorAttr}>
+        <div class="field-label-row">${badge}<label for="field-${fieldKey}">${field.label}</label></div>
         ${field.description ? `<div class="field-desc">${field.description}</div>` : ""}
         <select id="field-${fieldKey}" data-field="${fieldKey}">
           ${field.options
             .map(
               (opt) =>
-                `<option value="${opt.value}" ${opt.value === value ? "selected" : ""}>${opt.label}</option>`
+                `<option value="${opt.value}" ${String(opt.value) === String(value) ? "selected" : ""}>${opt.label}</option>`
             )
             .join("")}
         </select>
+      </div>`;
+  }
+
+  if (field.type === "string") {
+    return `
+      <div class="field-group"${anchorAttr}>
+        <div class="field-label-row">${badge}<label for="field-${fieldKey}">${field.label}</label></div>
+        ${field.description ? `<div class="field-desc">${field.description}</div>` : ""}
+        <input type="text" id="field-${fieldKey}" data-field="${fieldKey}" value="${value ?? ""}">
       </div>`;
   }
 
@@ -227,8 +377,8 @@ function renderField(field, parentId = null) {
   const unit = field.unit ? ` (${field.unit})` : "";
 
   return `
-    <div class="field-group">
-      <label for="field-${fieldKey}">${field.label}${unit}</label>
+    <div class="field-group"${anchorAttr}>
+      <div class="field-label-row">${badge}<label for="field-${fieldKey}">${field.label}${unit}</label></div>
       ${field.description ? `<div class="field-desc">${field.description}</div>` : ""}
       <input type="${inputType}" id="field-${fieldKey}" data-field="${fieldKey}"
         value="${value}" step="${step}" ${min} ${max}>
@@ -259,6 +409,7 @@ function findFieldDef(parentId, subId) {
 
 function parseFieldValue(raw, fieldDef) {
   if (!fieldDef) return raw;
+  if (fieldDef.type === "string") return raw;
   if (fieldDef.type === "float") return parseFloat(raw);
   if (fieldDef.type === "enum") return parseInt(raw, 10);
   return parseInt(raw, 10);
@@ -434,6 +585,7 @@ async function loadLibrary() {
               </span>
               <span class="item-actions">
                 <button data-load-scenario="${s.id}">Load</button>
+                <button data-export-scenario="${s.id}">Export</button>
                 <button data-delete-scenario="${s.id}">Delete</button>
               </span>
             </li>`
@@ -444,9 +596,33 @@ async function loadLibrary() {
   document.querySelectorAll("[data-load-scenario]").forEach((btn) => {
     btn.addEventListener("click", () => loadSavedScenario(btn.dataset.loadScenario));
   });
+  document.querySelectorAll("[data-export-scenario]").forEach((btn) => {
+    btn.addEventListener("click", () => exportSavedScenario(btn.dataset.exportScenario));
+  });
   document.querySelectorAll("[data-delete-scenario]").forEach((btn) => {
     btn.addEventListener("click", () => deleteSavedScenario(btn.dataset.deleteScenario));
   });
+}
+
+async function exportSavedScenario(id) {
+  try {
+    const scenario = await downloadScenarioFileFromApi(id, api);
+    setJsonStatus(`Downloaded ${scenarioFilename(scenario)} from server.`);
+  } catch (err) {
+    alert(`Export failed: ${err.message}`);
+  }
+}
+
+function exportCurrentScenario() {
+  if (state.scenarioSteps.length === 0) {
+    alert("Nothing to export — add steps or load a template first.");
+    return false;
+  }
+  const scenario = buildScenarioPayload();
+  downloadScenarioJson(scenario);
+  syncJsonEditorFromScenario();
+  setJsonStatus(`Downloaded ${scenarioFilename(scenario)} — edit in your editor, then import.`);
+  return true;
 }
 
 async function loadConfiguration(configId) {
@@ -944,7 +1120,11 @@ async function pollScenarioStatus() {
 document.getElementById("btn-save-scenario").addEventListener("click", async () => {
   try {
     const scenario = await saveScenario("local");
-    alert(`Scenario "${scenario.name}" saved locally (data/scenarios/).`);
+    syncJsonEditorFromScenario();
+    alert(
+      `Scenario saved to data/scenarios/${scenario.id}.json\n\n` +
+        "Use Download .json to edit in an external editor, or open the file directly in your repo."
+    );
   } catch (err) {
     alert(`Failed: ${err.message}`);
   }
@@ -1055,15 +1235,24 @@ async function importScenarioFromFile(file) {
 }
 
 function wireScenarioJsonIo() {
-  document.getElementById("btn-export-scenario")?.addEventListener("click", () => {
+  document.getElementById("btn-export-scenario")?.addEventListener("click", exportCurrentScenario);
+  document.getElementById("btn-export-scenario-run")?.addEventListener("click", exportCurrentScenario);
+
+  document.getElementById("btn-save-export-scenario")?.addEventListener("click", async () => {
     if (state.scenarioSteps.length === 0) {
-      alert("Nothing to export — add steps or load a template first.");
+      alert("Nothing to save — add steps or load a template first.");
       return;
     }
-    const scenario = buildScenarioPayload();
-    downloadScenarioJson(scenario);
-    syncJsonEditorFromScenario();
-    setJsonStatus(`Exported ${scenario.id}.json`);
+    try {
+      const scenario = await saveScenario("local");
+      downloadScenarioJson(scenario);
+      syncJsonEditorFromScenario();
+      setJsonStatus(
+        `Saved to data/scenarios/${scenario.id}.json and downloaded ${scenarioFilename(scenario)}.`
+      );
+    } catch (err) {
+      alert(`Failed: ${err.message}`);
+    }
   });
 
   document.getElementById("btn-sync-json-editor")?.addEventListener("click", syncJsonEditorFromScenario);
