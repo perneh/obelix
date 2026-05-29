@@ -16,8 +16,19 @@ logger = logging.getLogger(__name__)
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addoption("--address", action="store", default=None, help="Host under test")
-    parser.addoption("--port", action="store", type=int, default=None, help="Port under test")
+    parser.addoption(
+        "--address",
+        action="store",
+        default=None,
+        help="Host under test (default: localhost)",
+    )
+    parser.addoption(
+        "--port",
+        action="store",
+        type=int,
+        default=None,
+        help="Port under test (default: 8000)",
+    )
     parser.addoption("--url", action="store", default=None, help="Base URL under test")
 
 

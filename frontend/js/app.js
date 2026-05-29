@@ -503,7 +503,6 @@ async function saveConfiguration(scope) {
 }
 
 document.getElementById("btn-save-local").addEventListener("click", () => saveConfiguration("local"));
-document.getElementById("btn-save-shared").addEventListener("click", () => saveConfiguration("shared"));
 
 function renderConfigurationList(configurations) {
   const filter = document.getElementById("config-category-filter").value;
@@ -1339,38 +1338,6 @@ document.getElementById("btn-rebuild-template")?.addEventListener("click", () =>
   buildFromTemplate(state.activeTemplateId);
 });
 
-document.getElementById("btn-save-scenario-shared")?.addEventListener("click", async () => {
-  if (state.scenarioSteps.length === 0) {
-    alert("Load or build a scenario first.");
-    return;
-  }
-  const defaultName = state.activeTemplateId
-    ? `${state.activeTemplateId}-custom`
-    : "custom-scenario";
-  const name =
-    document.getElementById("scenario-name").value ||
-    prompt("Name for repository scenario:", defaultName);
-  if (!name) return;
-  document.getElementById("scenario-name").value = name;
-  const id =
-    prompt(
-      "Scenario id (filename without .json):",
-      name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
-    ) || `scenario-${Date.now().toString(36)}`;
-  try {
-    const scenario = buildScenarioPayload({ id, name, tags: ["shared", ...(state.activeTemplateId ? [state.activeTemplateId] : [])] });
-    await api("/saved-scenarios?scope=shared", {
-      method: "POST",
-      body: JSON.stringify(scenario),
-    });
-    state.activeScenarioId = scenario.id;
-    alert(`Scenario "${scenario.name}" saved to repository (scenarios/shared/).`);
-    setTemplateStatus(`Saved to repository as ${scenario.id}.json`);
-  } catch (err) {
-    alert(`Failed: ${err.message}`);
-  }
-});
-
 document.getElementById("btn-duplicate-scenario")?.addEventListener("click", () => {
   if (state.scenarioSteps.length === 0) {
     alert("Nothing to duplicate.");
@@ -1379,7 +1346,7 @@ document.getElementById("btn-duplicate-scenario")?.addEventListener("click", () 
   const baseName = document.getElementById("scenario-name").value || "Scenario copy";
   document.getElementById("scenario-name").value = `${baseName} (copy)`;
   state.activeScenarioId = "scenario-" + Date.now().toString(36);
-  setTemplateStatus("Duplicated — edit freely, then save locally or to repository.");
+  setTemplateStatus("Duplicated — edit freely, then save locally.");
   updateScenarioUI();
 });
 

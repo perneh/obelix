@@ -26,14 +26,13 @@ def run_list_categories(client) -> list[dict[str, Any]]:
     return response.json()
 
 
-def run_get_category_detail(client, category: int) -> dict[str, Any]:
+def run_get_category_detail(client, category: int) -> HttpResult:
     logger.debug("GET /api/categories/%s", category)
     response = client.get(f"/api/categories/{category}")
     logger.debug("Response status=%s", response.status_code)
     if response.status_code >= 400:
         logger.error("Get category failed: status=%s body=%s", response.status_code, response.text)
-    response.raise_for_status()
-    return response.json()
+    return _json_result(response)
 
 
 def run_get_category_help(client, category: int) -> HttpResult:
@@ -110,3 +109,104 @@ def run_health_check(client) -> HttpResult:
     logger.debug("Health check status=%s", response.status_code)
     body = response.json() if response.content else None
     return HttpResult(status_code=response.status_code, json=body, text=response.text)
+
+
+def _json_result(response) -> HttpResult:
+    body = response.json() if response.content else None
+    return HttpResult(status_code=response.status_code, json=body, text=response.text)
+
+
+def run_list_configurations(client, **params) -> HttpResult:
+    logger.debug("GET /api/configurations params=%s", params)
+    response = client.get("/api/configurations", params=params)
+    return _json_result(response)
+
+
+def run_delete_configuration(client, config_id: str) -> HttpResult:
+    logger.debug("DELETE /api/configurations/%s", config_id)
+    response = client.delete(f"/api/configurations/{config_id}")
+    return _json_result(response)
+
+
+def run_list_templates_legacy(client) -> HttpResult:
+    logger.debug("GET /api/templates")
+    response = client.get("/api/templates")
+    return _json_result(response)
+
+
+def run_send_message(client, payload: dict[str, Any]) -> HttpResult:
+    logger.debug("POST /api/send category=%s", payload.get("message", {}).get("category"))
+    response = client.post("/api/send", json=payload)
+    return _json_result(response)
+
+
+def run_validate_scenario(client, scenario: dict[str, Any]) -> HttpResult:
+    logger.debug("POST /api/scenarios/validate id=%s", scenario.get("id"))
+    response = client.post("/api/scenarios/validate", json=scenario)
+    return _json_result(response)
+
+
+def run_motion_defaults(client, message: dict[str, Any]) -> HttpResult:
+    logger.debug("POST /api/scenarios/motion-defaults category=%s", message.get("category"))
+    response = client.post("/api/scenarios/motion-defaults", json=message)
+    return _json_result(response)
+
+
+def run_list_scenario_runs(client) -> HttpResult:
+    logger.debug("GET /api/scenarios/runs")
+    response = client.get("/api/scenarios/runs")
+    return _json_result(response)
+
+
+def run_get_scenario_run(client, scenario_id: str) -> HttpResult:
+    logger.debug("GET /api/scenarios/runs/%s", scenario_id)
+    response = client.get(f"/api/scenarios/runs/{scenario_id}")
+    return _json_result(response)
+
+
+def run_list_scenario_templates(client) -> HttpResult:
+    logger.debug("GET /api/scenario-templates")
+    response = client.get("/api/scenario-templates")
+    return _json_result(response)
+
+
+def run_get_scenario_template(client, template_id: str) -> HttpResult:
+    logger.debug("GET /api/scenario-templates/%s", template_id)
+    response = client.get(f"/api/scenario-templates/{template_id}")
+    return _json_result(response)
+
+
+def run_build_scenario_template(client, template_id: str, params: dict[str, Any] | None = None) -> HttpResult:
+    logger.debug("POST /api/scenario-templates/%s/build", template_id)
+    response = client.post(f"/api/scenario-templates/{template_id}/build", json=params or {})
+    return _json_result(response)
+
+
+def run_list_saved_scenarios(client) -> HttpResult:
+    logger.debug("GET /api/saved-scenarios")
+    response = client.get("/api/saved-scenarios")
+    return _json_result(response)
+
+
+def run_save_saved_scenario(client, scenario: dict[str, Any], *, scope: str = "local") -> HttpResult:
+    logger.debug("POST /api/saved-scenarios id=%s scope=%s", scenario.get("id"), scope)
+    response = client.post("/api/saved-scenarios", params={"scope": scope}, json=scenario)
+    return _json_result(response)
+
+
+def run_get_saved_scenario(client, scenario_id: str) -> HttpResult:
+    logger.debug("GET /api/saved-scenarios/%s", scenario_id)
+    response = client.get(f"/api/saved-scenarios/{scenario_id}")
+    return _json_result(response)
+
+
+def run_download_saved_scenario_file(client, scenario_id: str) -> HttpResult:
+    logger.debug("GET /api/saved-scenarios/%s/file", scenario_id)
+    response = client.get(f"/api/saved-scenarios/{scenario_id}/file")
+    return HttpResult(status_code=response.status_code, json=None, text=response.text)
+
+
+def run_delete_saved_scenario(client, scenario_id: str) -> HttpResult:
+    logger.debug("DELETE /api/saved-scenarios/%s", scenario_id)
+    response = client.delete(f"/api/saved-scenarios/{scenario_id}")
+    return _json_result(response)

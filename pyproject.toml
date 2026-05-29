@@ -15,6 +15,7 @@ dependencies = [
 dev = [
     "pytest>=8.3.0",
     "httpx>=0.27.0",
+    "httpx2>=2.2.0",
     "pytest-cov>=6.0.0",
 ]
 
@@ -32,13 +33,11 @@ markers = [
     "unit: pure unit tests with no external I/O",
     "integration: tests that exercise API boundaries",
     "live: integration tests against a running server (skipped if unreachable)",
+    "regression: live HTTP regression tests against a running Obelix backend",
     "slow: long-running tests",
 ]
 addopts = [
     "-ra",
     "--strict-markers",
     "--strict-config",
-]
-filterwarnings = [
-    "ignore:Using `httpx` with `starlette.testclient`:DeprecationWarning",
 ]

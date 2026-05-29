@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from urllib.parse import urlparse
 
 
-DEFAULT_ADDRESS = "127.0.0.1"
+DEFAULT_ADDRESS = "localhost"
 DEFAULT_PORT = 8000
 ENV_ADDRESS = "TEST_ADDRESS"
 ENV_PORT = "TEST_PORT"

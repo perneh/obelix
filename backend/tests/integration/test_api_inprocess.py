@@ -32,7 +32,8 @@ def test_list_categories_returns_cat034(api_client):
 @pytest.mark.integration
 def test_get_category_detail_includes_fields(api_client):
     result = run_get_category_detail(api_client, 34)
-    assert_category_detail(result, category_id=34)
+    assert_status_ok(result)
+    assert_category_detail(result.json, category_id=34)
 
 
 @pytest.mark.integration

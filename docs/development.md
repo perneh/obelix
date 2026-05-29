@@ -6,12 +6,28 @@ See [backend/tests/README.md](backend/tests/README.md) for the full testing guid
 
 ### Running tests
 
+See [backend/tests/README.md](../backend/tests/README.md) for the full guide.
+
+| What | Command |
+|------|---------|
+| All | `./scripts/test.sh` |
+| Unit | `./scripts/test.sh unit` |
+| Integration | `./scripts/test.sh integration` |
+| Live (server required) | `./scripts/test.sh live --address=localhost --port=8000` |
+| Regression (server required) | `./scripts/test.sh regression --address=localhost --port=8000` |
+| Coverage | `./scripts/test.sh cov` |
+
+Stop on first failure and print per-test results:
+
+```bash
+./obelix start --dev   # another terminal, for live/regression
+
+./scripts/test.sh regression --address=localhost --port=8000 -x -v -rA
+./scripts/test.sh unit -x -v
+```
+
 ```bash
 pip install -e ".[dev]"
-pytest                              # all tests
-./scripts/test.sh unit              # unit only
-./scripts/test.sh integration       # in-process API tests
-./scripts/test.sh live -- --url=http://127.0.0.1:8000  # live server
 LOG_LEVEL=DEBUG pytest --log-cli-level=DEBUG
 ```
 

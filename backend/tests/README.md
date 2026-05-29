@@ -6,47 +6,112 @@ Functional, specification-style pytest tests for Obelix. Tests are plain functio
 
 ## Quick start
 
+Install dev dependencies once:
+
 ```bash
-# Install dev dependencies
 pip install -e ".[dev]"
-
-# Run all tests (live tests skip automatically if no server is running)
-pytest
-
-# Or use the helper script
 chmod +x scripts/test.sh
-./scripts/test.sh          # all
-./scripts/test.sh unit     # unit only
-./scripts/test.sh integration  # in-process API tests
-./scripts/test.sh live     # against running server
-./scripts/test.sh cov      # with coverage
 ```
 
-Run a single file:
+Start Obelix when running **live** or **regression** tests (in another terminal):
+
+```bash
+./obelix start --dev
+```
+
+## Running tests
+
+All commands assume you are in the **repository root**.
+
+| What | Command |
+|------|---------|
+| **All tests** | `./scripts/test.sh` or `pytest` |
+| **Unit** (encoding, registry — no I/O) | `./scripts/test.sh unit` |
+| **Integration** (in-process API, TestClient) | `./scripts/test.sh integration` |
+| **Live integration** (running server) | `./scripts/test.sh live --address=localhost --port=8000` |
+| **Regression** (HTTP API, per endpoint) | `./scripts/test.sh regression --address=localhost --port=8000` |
+| **Coverage** | `./scripts/test.sh cov` |
+
+Equivalent `pytest` invocations:
+
+```bash
+pytest                                          # all
+pytest backend/tests/unit -m unit               # unit
+pytest backend/tests/integration -m "integration and not live"   # integration
+pytest backend/tests/integration -m live --address=localhost --port=8000
+pytest backend/tests/regression -m regression --address=localhost --port=8000
+```
+
+### Stop on first failure and show statistics
+
+Add these flags to any command above:
+
+| Flag | Effect |
+|------|--------|
+| `-x` / `--exitfirst` | Stop as soon as one test fails |
+| `-v` | Print each test name and PASSED/FAILED while running |
+| `-rA` | Extra summary at the end (passed, failed, skipped, …) |
+| `--tb=short` | Shorter traceback on failures |
+
+**Regression example** (server must be running):
+
+```bash
+./scripts/test.sh regression --address=localhost --port=8000 -x -v -rA --tb=short
+```
+
+**Unit example:**
+
+```bash
+./scripts/test.sh unit -x -v
+```
+
+Pytest always prints a final line such as `5 passed in 0.45s` or `1 failed, 4 passed in 1.2s`.
+
+### Single file or single test
 
 ```bash
 pytest backend/tests/unit/test_encoding_cat034.py
+pytest backend/tests/regression/test_cat015.py -v
+pytest backend/tests/regression/test_send.py::test_send -x -v
 ```
 
-Enable debug logging:
+### Remote host (regression / live)
 
 ```bash
-# Option A: environment variable
-LOG_LEVEL=DEBUG pytest
+pytest backend/tests/regression -m regression --address=192.168.1.10 --port=8000 -x -v
 
-# Option B: pytest built-in
-pytest --log-cli-level=DEBUG
+# Or via environment
+TEST_ADDRESS=10.0.0.5 TEST_PORT=8080 pytest backend/tests/regression -m regression
+TEST_URL=http://staging.example.com pytest backend/tests/regression -m regression
 ```
 
-Run against a host (live integration tests):
+Default target when `--address` / `--port` are omitted: `localhost:8000`.
+
+### Debug logging
 
 ```bash
-./obelix start --dev   # in another terminal
-
-pytest backend/tests/integration -m live --address=localhost --port=8000
-pytest backend/tests/integration -m live --url=http://127.0.0.1:8000
-TEST_URL=http://127.0.0.1:8000 pytest backend/tests/integration -m live
+LOG_LEVEL=DEBUG pytest backend/tests/regression -m regression -v
+pytest --log-cli-level=DEBUG backend/tests/regression -m regression
 ```
+
+Verify custom CLI options:
+
+```bash
+pytest --help | grep -E 'address|port|url'
+```
+
+Regression layout:
+
+| Suite | File | Endpoints covered |
+|-------|------|-------------------|
+| Health | `regression/test_health.py` | `GET /api/categories` |
+| Frontend | `regression/test_frontend.py` | `GET /` |
+| Cat 015–240 | `regression/test_cat*.py` | category detail, help, `POST /api/encode` |
+| Configurations | `regression/test_configurations.py` | `/api/configurations` CRUD |
+| Scenarios | `regression/test_scenarios.py` | validate, motion-defaults, runs |
+| Templates | `regression/test_scenario_templates.py` | `/api/scenario-templates` |
+| Saved scenarios | `regression/test_saved_scenarios.py` | `/api/saved-scenarios` |
+| Send | `regression/test_send.py` | `POST /api/encode`, `POST /api/send` |
 
 Verify custom CLI options:
 
@@ -65,9 +130,12 @@ backend/tests/
 │   ├── cli_options.py       # --address, --port, --url resolution (pure)
 │   ├── builders/            # pure payload and field builders
 │   ├── actions/             # workflows (encode, HTTP calls)
+│   │   ├── http.py          # integration tests (TestClient / live client)
+│   │   └── regression_http.py  # regression: get/post/delete(address, port, path)
 │   └── assertions/          # reusable assertion helpers
 ├── unit/                    # pure encoding/registry tests
-└── integration/             # API tests (in-process and live)
+├── integration/             # API tests (in-process and live)
+└── regression/              # live HTTP regression suites (httpx, per category)
 ```
 
 | Folder | Purpose |
@@ -107,6 +175,7 @@ Use **parametrize** when the workflow is identical and only inputs differ. Add a
 |-------|--------|----------------|
 | Builders | `tests.support.builders.encoding` | `build_cat034_north_marker_fields()` |
 | Actions | `tests.support.actions.http` | `run_list_categories(client)` |
+| Regression HTTP | `tests.support.actions.regression_http` | `get(address, port, "/api/categories")` |
 | Assertions | `tests.support.assertions.http` | `assert_status_ok(result)` |
 
 Import symbols explicitly — no star imports.
@@ -129,11 +198,9 @@ Registered in `conftest.py`, resolved in `tests/support/cli_options.py`.
 | `--port` | TCP port | `--port=8080` |
 | `--url` | Full base URL (overrides address/port) | `--url=http://staging:9000` |
 
-**Precedence:** `--url` → `TEST_URL` → `--address` + `--port` → `TEST_ADDRESS` / `TEST_PORT` → defaults (`127.0.0.1:8000`).
+**Precedence:** `--url` → `TEST_URL` → `--address` + `--port` → `TEST_ADDRESS` / `TEST_PORT` → defaults (`localhost:8000`).
 
-Session fixture `target` exposes a frozen `TargetConfig` dataclass. Tests and support code receive it as an argument — **do not** read `pytestconfig` inside test files.
-
-Live tests use the `live_http_client` fixture, which skips gracefully when the server is unreachable.
+Session fixtures `address` and `port` (regression) or `live_http_client` (live integration) skip gracefully when the server is unreachable.
 
 ## Markers
 
@@ -142,12 +209,14 @@ Live tests use the `live_http_client` fixture, which skips gracefully when the s
 | `unit` | No external I/O |
 | `integration` | API boundary tests |
 | `live` | Requires running server (auto-skip if down) |
+| `regression` | Live HTTP regression against running backend (auto-skip if down) |
 | `slow` | Reserved for long-running tests |
 
 ```bash
 pytest -m unit
 pytest -m "integration and not live"
 pytest -m live --url=http://localhost:8000
+pytest -m regression --address=localhost --port=8000
 ```
 
 ## CI
