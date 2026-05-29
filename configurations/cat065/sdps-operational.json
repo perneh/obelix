@@ -1,0 +1,21 @@
+{
+  "category": 65,
+  "name": "SDPS operational status",
+  "description": "SDPS Status message (type 1) with operational NOGO and SDPS-1 selected.",
+  "fields": {
+    "data_source": { "sac": 1, "sic": 1 },
+    "message_type": 1,
+    "service_id": 1,
+    "time_of_message": 36000.0,
+    "include_sdps_configuration": 1,
+    "sdps_configuration": {
+      "nogo": 0,
+      "ovl": 0,
+      "tsv": 0,
+      "pss": 1,
+      "sttn": 0
+    },
+    "include_service_status_report": 0,
+    "service_status_report": 15
+  }
+}

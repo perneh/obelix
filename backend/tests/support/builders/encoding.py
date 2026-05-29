@@ -139,6 +139,35 @@ def build_cat021_adsb_fields(
     }
 
 
+def build_cat065_sdps_status_fields(
+    *,
+    sac: int = 1,
+    sic: int = 1,
+    message_type: int = 1,
+    service_id: int = 1,
+    include_sdps_configuration: int = 1,
+    include_service_status_report: int = 0,
+    service_status_report: int = 15,
+    sdps_nogo: int = 0,
+) -> dict[str, Any]:
+    return {
+        "data_source": {"sac": sac, "sic": sic},
+        "message_type": message_type,
+        "service_id": service_id,
+        "time_of_message": 36000.0,
+        "include_sdps_configuration": include_sdps_configuration,
+        "sdps_configuration": {
+            "nogo": sdps_nogo,
+            "ovl": 0,
+            "tsv": 0,
+            "pss": 1,
+            "sttn": 0,
+        },
+        "include_service_status_report": include_service_status_report,
+        "service_status_report": service_status_report,
+    }
+
+
 def build_cat062_minimal_fields(
     *,
     sac: int = 1,

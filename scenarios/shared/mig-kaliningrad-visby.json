@@ -1,7 +1,7 @@
 {
   "id": "mig-kaliningrad-visby",
   "name": "Hostile MiG – Kaliningrad → Visby",
-  "description": "Non-cooperative hostile track – all ASTERIX categories (015/016/021/034/048/062).",
+  "description": "Non-cooperative hostile track – all ASTERIX categories (015/016/021/034/048/062/065).",
   "transport": {
     "host": "host.docker.internal",
     "port": 8600,
@@ -37,6 +37,35 @@
         }
       },
       "delay_ms": 0,
+      "repeat": 1,
+      "motion": null
+    },
+    {
+      "id": "mig-065",
+      "name": "SDPS service status report (Cat 065)",
+      "message": {
+        "category": 65,
+        "fields": {
+          "data_source": {
+            "sac": 1,
+            "sic": 1
+          },
+          "message_type": 3,
+          "service_id": 1,
+          "time_of_message": 36000.0,
+          "include_sdps_configuration": 0,
+          "sdps_configuration": {
+            "nogo": 1,
+            "ovl": 0,
+            "tsv": 0,
+            "pss": 1,
+            "sttn": 0
+          },
+          "include_service_status_report": 1,
+          "service_status_report": 1
+        }
+      },
+      "delay_ms": 100,
       "repeat": 1,
       "motion": null
     },

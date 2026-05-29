@@ -6,7 +6,7 @@ from app.asterix.registry import get_category
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("category", [15, 16, 21, 34, 48, 62])
+@pytest.mark.parametrize("category", [15, 16, 21, 34, 48, 62, 65])
 def test_category_definition_includes_uap(category):
     definition = get_category(category).definition().to_dict()
     uap = definition.get("uap")

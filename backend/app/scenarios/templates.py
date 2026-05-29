@@ -55,7 +55,7 @@ def list_template_catalog() -> list[dict[str, Any]]:
             "description": (
                 "Friendly Gripen transit using all ASTERIX categories: INCS config, "
                 "monoradar service messages, plots, INCS target report, ADS-B report, "
-                "and SDPS system track."
+                "SDPS service status, and SDPS system track."
             ),
             "aircraft": "JAS 39 Gripen",
             "route": "ESSB Bromma → ESSV Visby",
@@ -212,6 +212,41 @@ def _step_016_config(p: TemplateParams, step_id: str = "incs-config") -> Scenari
         },
         delay_ms=0,
     )
+
+
+def _step_065_sdps_status(
+    step_id: str,
+    *,
+    message_type: int = 1,
+    service_status_report: int = 15,
+    sdps_nogo: int = 0,
+    include_service_status_report: int = 0,
+    delay_ms: int = 100,
+) -> ScenarioStep:
+    fields: dict[str, Any] = {
+        "data_source": {"sac": SDPS_SAC, "sic": SDPS_SIC},
+        "message_type": message_type,
+        "service_id": 1,
+        "time_of_message": 36000.0,
+        "include_sdps_configuration": 1 if message_type == 1 else 0,
+        "sdps_configuration": {
+            "nogo": sdps_nogo,
+            "ovl": 0,
+            "tsv": 0,
+            "pss": 1,
+            "sttn": 0,
+        },
+        "include_service_status_report": include_service_status_report,
+        "service_status_report": service_status_report,
+    }
+    if message_type == 3:
+        fields["include_service_status_report"] = 1
+    name = {
+        1: "SDPS operational status (Cat 065)",
+        2: "SDPS end of batch (Cat 065)",
+        3: "SDPS service status report (Cat 065)",
+    }.get(message_type, "SDPS service status (Cat 065)")
+    return _step(step_id, name, 65, fields, delay_ms=delay_ms)
 
 
 def _step_034_north_marker(step_id: str = "north-marker", delay_ms: int = 0) -> ScenarioStep:
@@ -395,6 +430,7 @@ def _build_jas_bromma_visby(p: TemplateParams) -> Scenario:
     heading = bearing_deg(*BROMMA, *VISBY)
     steps = [
         _step_016_config(p, "jas-016"),
+        _step_065_sdps_status("jas-065", delay_ms=100),
         _step_034_north_marker("jas-034-nm", delay_ms=200),
         _step_034_sector(heading, "jas-034-sector", delay_ms=300),
         _step_062_track(
@@ -442,7 +478,7 @@ def _build_jas_bromma_visby(p: TemplateParams) -> Scenario:
     return Scenario(
         id="jas-bromma-visby",
         name="JAS 39 – Bromma → Visby",
-        description="Friendly Gripen – full ASTERIX category coverage (015/016/021/034/048/062).",
+        description="Friendly Gripen – full ASTERIX category coverage (015/016/021/034/048/062/065).",
         transport=_transport(p),
         loop_count=p.loop_count,
         interval_ms=5000,
@@ -454,6 +490,13 @@ def _build_mig_kaliningrad_visby(p: TemplateParams) -> Scenario:
     heading = bearing_deg(*KALININGRAD, *VISBY)
     steps = [
         _step_016_config(p, "mig-016"),
+        _step_065_sdps_status(
+            "mig-065",
+            message_type=3,
+            service_status_report=1,
+            sdps_nogo=1,
+            delay_ms=100,
+        ),
         _step_034_north_marker("mig-034-nm", delay_ms=200),
         _step_034_sector(heading, "mig-034-sector", delay_ms=300),
         _step_062_track(
@@ -504,7 +547,7 @@ def _build_mig_kaliningrad_visby(p: TemplateParams) -> Scenario:
     return Scenario(
         id="mig-kaliningrad-visby",
         name="Hostile MiG – Kaliningrad → Visby",
-        description="Non-cooperative hostile track – all ASTERIX categories (015/016/021/034/048/062).",
+        description="Non-cooperative hostile track – all ASTERIX categories (015/016/021/034/048/062/065).",
         transport=_transport(p),
         loop_count=p.loop_count,
         interval_ms=5000,
@@ -517,6 +560,7 @@ def _build_baltic_combined(p: TemplateParams) -> Scenario:
     mig_h = bearing_deg(*KALININGRAD, *VISBY)
     steps = [
         _step_016_config(p, "bal-016"),
+        _step_065_sdps_status("bal-065", delay_ms=50),
         _step_034_north_marker("bal-034-nm", delay_ms=0),
         _step_034_sector(jas_h, "bal-034-jas-sector", delay_ms=400),
         _step_062_track(
@@ -591,7 +635,7 @@ def _build_baltic_combined(p: TemplateParams) -> Scenario:
         name="Baltic exercise – JAS + MiG",
         description=(
             "Combined air picture: JAS from Bromma and hostile MiG from Kaliningrad, "
-            "all categories 015/016/021/034/048/062."
+            "all categories 015/016/021/034/048/062/065."
         ),
         transport=_transport(p),
         loop_count=p.loop_count,

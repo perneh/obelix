@@ -11,6 +11,7 @@ from app.asterix.categories.cat021 import Cat021
 from app.asterix.categories.cat034 import Cat034
 from app.asterix.categories.cat048 import Cat048
 from app.asterix.categories.cat062 import Cat062
+from app.asterix.categories.cat065 import Cat065
 
 _REGISTRY: dict[int, Type[AsterixCategory]] = {
     15: Cat015,
@@ -19,6 +20,7 @@ _REGISTRY: dict[int, Type[AsterixCategory]] = {
     34: Cat034,
     48: Cat048,
     62: Cat062,
+    65: Cat065,
 }
 
 
