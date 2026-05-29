@@ -1,7 +1,7 @@
 {
   "id": "mig-kaliningrad-visby",
   "name": "Hostile MiG – Kaliningrad → Visby",
-  "description": "Non-cooperative hostile track – all ASTERIX categories (015/016/021/034/048/062/065).",
+  "description": "Non-cooperative hostile track – all ASTERIX categories (015/016/021/034/048/062/065/240).",
   "transport": {
     "host": "host.docker.internal",
     "port": 8600,
@@ -88,6 +88,24 @@
       "motion": null
     },
     {
+      "id": "mig-240-sum",
+      "name": "Radar video summary (Cat 240)",
+      "message": {
+        "category": 240,
+        "fields": {
+          "data_source": {
+            "sac": 2,
+            "sic": 1
+          },
+          "message_type": 1,
+          "video_summary": "BALTIC-MIG-RADAR-VR"
+        }
+      },
+      "delay_ms": 100,
+      "repeat": 1,
+      "motion": null
+    },
+    {
       "id": "mig-034-sector",
       "name": "Sector crossing 339° (Cat 034)",
       "message": {
@@ -104,6 +122,75 @@
       "delay_ms": 300,
       "repeat": 1,
       "motion": null
+    },
+    {
+      "id": "mig-240-vid",
+      "name": "Radar video radial 339° (Cat 240)",
+      "message": {
+        "category": 240,
+        "fields": {
+          "data_source": {
+            "sac": 2,
+            "sic": 1
+          },
+          "message_type": 2,
+          "video_sequence": 2,
+          "header_format": "nano",
+          "video_header": {
+            "start_az_deg": 337.1941696479472,
+            "end_az_deg": 340.1941696479472,
+            "start_range_cells": 0,
+            "cell_duration_ns": 1000,
+            "cell_duration_fs": 1000000
+          },
+          "video_resolution": {
+            "compression": 0,
+            "resolution": 4
+          },
+          "video_block_format": "low",
+          "video_cells_hex": "",
+          "include_time_of_day": 1,
+          "time_of_day": 36000.0
+        }
+      },
+      "delay_ms": 200,
+      "repeat": 1,
+      "motion": {
+        "enabled": true,
+        "mode": "direction",
+        "waypoints": [
+          {
+            "latitude_deg": null,
+            "longitude_deg": null,
+            "x_m": null,
+            "y_m": null,
+            "rho_nm": null,
+            "theta_deg": null,
+            "range_m": null,
+            "azimuth": 338.6941696479472,
+            "geometric_altitude_ft": null,
+            "flight_level": null
+          },
+          {
+            "latitude_deg": null,
+            "longitude_deg": null,
+            "x_m": null,
+            "y_m": null,
+            "rho_nm": null,
+            "theta_deg": null,
+            "range_m": null,
+            "azimuth": 68.6941696479472,
+            "geometric_altitude_ft": null,
+            "flight_level": null
+          }
+        ],
+        "heading_deg": 68.6941696479472,
+        "step_distance": 3.0,
+        "ticks": 60,
+        "tick_interval_ms": 2000,
+        "update_time": true,
+        "derive_velocity": false
+      }
     },
     {
       "id": "mig-062",

@@ -55,7 +55,7 @@ def list_template_catalog() -> list[dict[str, Any]]:
             "description": (
                 "Friendly Gripen transit using all ASTERIX categories: INCS config, "
                 "monoradar service messages, plots, INCS target report, ADS-B report, "
-                "SDPS service status, and SDPS system track."
+                "SDPS service status, radar video, and SDPS system track."
             ),
             "aircraft": "JAS 39 Gripen",
             "route": "ESSB Bromma → ESSV Visby",
@@ -249,6 +249,79 @@ def _step_065_sdps_status(
     return _step(step_id, name, 65, fields, delay_ms=delay_ms)
 
 
+def _motion_azimuth_sweep(center_az: float, p: TemplateParams, beam_width_deg: float = 3.0) -> StepMotion:
+    return StepMotion(
+        enabled=True,
+        mode=MotionMode.DIRECTION,
+        waypoints=[
+            MotionWaypoint(azimuth=center_az),
+            MotionWaypoint(azimuth=(center_az + 90.0) % 360.0),
+        ],
+        heading_deg=(center_az + 90.0) % 360.0,
+        step_distance=beam_width_deg,
+        ticks=p.ticks,
+        tick_interval_ms=p.tick_interval_ms,
+        update_time=True,
+        derive_velocity=False,
+    )
+
+
+def _default_video_header(azimuth_deg: float, beam_width_deg: float = 3.0) -> dict[str, Any]:
+    start = (azimuth_deg - beam_width_deg / 2.0) % 360.0
+    end = (azimuth_deg + beam_width_deg / 2.0) % 360.0
+    return {
+        "start_az_deg": start,
+        "end_az_deg": end,
+        "start_range_cells": 0,
+        "cell_duration_ns": 1000,
+        "cell_duration_fs": 1_000_000,
+    }
+
+
+def _step_240_video_summary(step_id: str, summary: str, delay_ms: int = 0) -> ScenarioStep:
+    return _step(
+        step_id,
+        "Radar video summary (Cat 240)",
+        240,
+        {
+            "data_source": {"sac": RADAR_SAC, "sic": RADAR_SIC},
+            "message_type": 1,
+            "video_summary": summary,
+        },
+        delay_ms=delay_ms,
+    )
+
+
+def _step_240_video_radial(
+    step_id: str,
+    azimuth_deg: float,
+    p: TemplateParams,
+    *,
+    video_sequence: int = 1,
+    delay_ms: int = 0,
+    beam_width_deg: float = 3.0,
+) -> ScenarioStep:
+    return _step(
+        step_id,
+        f"Radar video radial {azimuth_deg:.0f}° (Cat 240)",
+        240,
+        {
+            "data_source": {"sac": RADAR_SAC, "sic": RADAR_SIC},
+            "message_type": 2,
+            "video_sequence": video_sequence,
+            "header_format": "nano",
+            "video_header": _default_video_header(azimuth_deg, beam_width_deg),
+            "video_resolution": {"compression": 0, "resolution": 4},
+            "video_block_format": "low",
+            "video_cells_hex": "",
+            "include_time_of_day": 1,
+            "time_of_day": 36000.0,
+        },
+        motion=_motion_azimuth_sweep(azimuth_deg, p, beam_width_deg),
+        delay_ms=delay_ms,
+    )
+
+
 def _step_034_north_marker(step_id: str = "north-marker", delay_ms: int = 0) -> ScenarioStep:
     return _step(
         step_id,
@@ -432,7 +505,9 @@ def _build_jas_bromma_visby(p: TemplateParams) -> Scenario:
         _step_016_config(p, "jas-016"),
         _step_065_sdps_status("jas-065", delay_ms=100),
         _step_034_north_marker("jas-034-nm", delay_ms=200),
+        _step_240_video_summary("jas-240-sum", "BALTIC-JAS-RADAR-VR", delay_ms=100),
         _step_034_sector(heading, "jas-034-sector", delay_ms=300),
+        _step_240_video_radial("jas-240-vid", heading, p, delay_ms=200),
         _step_062_track(
             "JAS 39 system track (Cat 062)",
             p.jas_track_number,
@@ -478,7 +553,7 @@ def _build_jas_bromma_visby(p: TemplateParams) -> Scenario:
     return Scenario(
         id="jas-bromma-visby",
         name="JAS 39 – Bromma → Visby",
-        description="Friendly Gripen – full ASTERIX category coverage (015/016/021/034/048/062/065).",
+        description="Friendly Gripen – full ASTERIX category coverage (015/016/021/034/048/062/065/240).",
         transport=_transport(p),
         loop_count=p.loop_count,
         interval_ms=5000,
@@ -498,7 +573,9 @@ def _build_mig_kaliningrad_visby(p: TemplateParams) -> Scenario:
             delay_ms=100,
         ),
         _step_034_north_marker("mig-034-nm", delay_ms=200),
+        _step_240_video_summary("mig-240-sum", "BALTIC-MIG-RADAR-VR", delay_ms=100),
         _step_034_sector(heading, "mig-034-sector", delay_ms=300),
+        _step_240_video_radial("mig-240-vid", heading, p, video_sequence=2, delay_ms=200),
         _step_062_track(
             "Hostile MiG system track (Cat 062)",
             p.mig_track_number,
@@ -547,7 +624,7 @@ def _build_mig_kaliningrad_visby(p: TemplateParams) -> Scenario:
     return Scenario(
         id="mig-kaliningrad-visby",
         name="Hostile MiG – Kaliningrad → Visby",
-        description="Non-cooperative hostile track – all ASTERIX categories (015/016/021/034/048/062/065).",
+        description="Non-cooperative hostile track – all ASTERIX categories (015/016/021/034/048/062/065/240).",
         transport=_transport(p),
         loop_count=p.loop_count,
         interval_ms=5000,
@@ -562,7 +639,9 @@ def _build_baltic_combined(p: TemplateParams) -> Scenario:
         _step_016_config(p, "bal-016"),
         _step_065_sdps_status("bal-065", delay_ms=50),
         _step_034_north_marker("bal-034-nm", delay_ms=0),
+        _step_240_video_summary("bal-240-sum", "BALTIC-COMBINED-RADAR-VR", delay_ms=50),
         _step_034_sector(jas_h, "bal-034-jas-sector", delay_ms=400),
+        _step_240_video_radial("bal-jas-240-vid", jas_h, p, delay_ms=100),
         _step_062_track(
             "JAS 39 SDPS track (Cat 062)",
             p.jas_track_number,
@@ -591,6 +670,7 @@ def _build_baltic_combined(p: TemplateParams) -> Scenario:
             delay_ms=100,
         ),
         _step_034_sector(mig_h, "bal-034-mig-sector", delay_ms=400),
+        _step_240_video_radial("bal-mig-240-vid", mig_h, p, video_sequence=2, delay_ms=100),
         _step_062_track(
             "Hostile MiG SDPS track (Cat 062)",
             p.mig_track_number,
@@ -635,7 +715,7 @@ def _build_baltic_combined(p: TemplateParams) -> Scenario:
         name="Baltic exercise – JAS + MiG",
         description=(
             "Combined air picture: JAS from Bromma and hostile MiG from Kaliningrad, "
-            "all categories 015/016/021/034/048/062/065."
+            "all categories 015/016/021/034/048/062/065/240."
         ),
         transport=_transport(p),
         loop_count=p.loop_count,

@@ -1,7 +1,7 @@
 {
   "id": "jas-bromma-visby",
   "name": "JAS 39 – Bromma → Visby",
-  "description": "Friendly Gripen – full ASTERIX category coverage (015/016/021/034/048/062/065).",
+  "description": "Friendly Gripen – full ASTERIX category coverage (015/016/021/034/048/062/065/240).",
   "transport": {
     "host": "host.docker.internal",
     "port": 8600,
@@ -88,6 +88,24 @@
       "motion": null
     },
     {
+      "id": "jas-240-sum",
+      "name": "Radar video summary (Cat 240)",
+      "message": {
+        "category": 240,
+        "fields": {
+          "data_source": {
+            "sac": 2,
+            "sic": 1
+          },
+          "message_type": 1,
+          "video_summary": "BALTIC-JAS-RADAR-VR"
+        }
+      },
+      "delay_ms": 100,
+      "repeat": 1,
+      "motion": null
+    },
+    {
       "id": "jas-034-sector",
       "name": "Sector crossing 173° (Cat 034)",
       "message": {
@@ -104,6 +122,75 @@
       "delay_ms": 300,
       "repeat": 1,
       "motion": null
+    },
+    {
+      "id": "jas-240-vid",
+      "name": "Radar video radial 173° (Cat 240)",
+      "message": {
+        "category": 240,
+        "fields": {
+          "data_source": {
+            "sac": 2,
+            "sic": 1
+          },
+          "message_type": 2,
+          "video_sequence": 1,
+          "header_format": "nano",
+          "video_header": {
+            "start_az_deg": 171.20725633149573,
+            "end_az_deg": 174.20725633149573,
+            "start_range_cells": 0,
+            "cell_duration_ns": 1000,
+            "cell_duration_fs": 1000000
+          },
+          "video_resolution": {
+            "compression": 0,
+            "resolution": 4
+          },
+          "video_block_format": "low",
+          "video_cells_hex": "",
+          "include_time_of_day": 1,
+          "time_of_day": 36000.0
+        }
+      },
+      "delay_ms": 200,
+      "repeat": 1,
+      "motion": {
+        "enabled": true,
+        "mode": "direction",
+        "waypoints": [
+          {
+            "latitude_deg": null,
+            "longitude_deg": null,
+            "x_m": null,
+            "y_m": null,
+            "rho_nm": null,
+            "theta_deg": null,
+            "range_m": null,
+            "azimuth": 172.70725633149573,
+            "geometric_altitude_ft": null,
+            "flight_level": null
+          },
+          {
+            "latitude_deg": null,
+            "longitude_deg": null,
+            "x_m": null,
+            "y_m": null,
+            "rho_nm": null,
+            "theta_deg": null,
+            "range_m": null,
+            "azimuth": 262.7072563314957,
+            "geometric_altitude_ft": null,
+            "flight_level": null
+          }
+        ],
+        "heading_deg": 262.7072563314957,
+        "step_distance": 3.0,
+        "ticks": 60,
+        "tick_interval_ms": 2000,
+        "update_time": true,
+        "derive_velocity": false
+      }
     },
     {
       "id": "jas-062",

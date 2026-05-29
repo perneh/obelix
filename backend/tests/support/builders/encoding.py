@@ -139,6 +139,46 @@ def build_cat021_adsb_fields(
     }
 
 
+def build_cat240_video_summary_fields(
+    *,
+    sac: int = 2,
+    sic: int = 1,
+    summary: str = "OBELIX-RADAR-VIDEO-1.0",
+) -> dict[str, Any]:
+    return {
+        "data_source": {"sac": sac, "sic": sic},
+        "message_type": 1,
+        "video_summary": summary,
+    }
+
+
+def build_cat240_video_radial_fields(
+    *,
+    sac: int = 2,
+    sic: int = 1,
+    start_az_deg: float = 44.0,
+    end_az_deg: float = 47.0,
+    video_sequence: int = 1,
+) -> dict[str, Any]:
+    return {
+        "data_source": {"sac": sac, "sic": sic},
+        "message_type": 2,
+        "video_sequence": video_sequence,
+        "header_format": "nano",
+        "video_header": {
+            "start_az_deg": start_az_deg,
+            "end_az_deg": end_az_deg,
+            "start_range_cells": 0,
+            "cell_duration_ns": 1000,
+        },
+        "video_resolution": {"compression": 0, "resolution": 4},
+        "video_block_format": "low",
+        "video_cells_hex": "",
+        "include_time_of_day": 1,
+        "time_of_day": 36000.0,
+    }
+
+
 def build_cat065_sdps_status_fields(
     *,
     sac: int = 1,

@@ -1,6 +1,6 @@
 /** Category route/motion helpers for the scenario builder. */
 
-export const MOTION_CATEGORIES = new Set([15, 21, 34, 48, 62]);
+export const MOTION_CATEGORIES = new Set([15, 21, 34, 48, 62, 240]);
 
 export function supportsMotion(category) {
   return MOTION_CATEGORIES.has(category);
@@ -8,13 +8,14 @@ export function supportsMotion(category) {
 
 export function stepDistanceLabel(category) {
   if (category === 48) return "Distance per message (NM)";
-  if (category === 34) return "Azimuth change per message (°)";
+  if (category === 34 || category === 240) return "Azimuth change per message (°)";
   return "Distance per message (m)";
 }
 
 export function stepDistanceHint(category) {
   if (category === 48) return "Range increases each tick along the heading bearing";
   if (category === 34) return "Antenna azimuth increases by this amount each tick";
+  if (category === 240) return "Video radial azimuth window sweeps by this amount each tick";
   return "Position moves this far each tick in the chosen direction";
 }
 
@@ -51,7 +52,7 @@ export function motionFieldConfig(category, fields) {
       { key: "theta_deg", label: "End azimuth", unit: "°" },
     ];
   }
-  if (category === 34) {
+  if (category === 34 || category === 240) {
     return [{ key: "azimuth", label: "End azimuth", unit: "°" }];
   }
   return [];
@@ -72,6 +73,7 @@ export function formatWaypointSummary(category, fields, waypoint) {
 export function defaultStepDistance(category) {
   if (category === 48) return 1.0;
   if (category === 34) return 10.0;
+  if (category === 240) return 2.0;
   if (category === 15) return 1000.0;
   return 1000.0;
 }

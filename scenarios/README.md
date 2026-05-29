@@ -8,7 +8,7 @@ Pre-built realistic ASTERIX exercise scenarios for Obelix.
 | `shared/mig-kaliningrad-visby.json` | Hostile MiG Kaliningrad → Visby |
 | `shared/baltic-combined.json` | Combined Baltic exercise (JAS + MiG) |
 
-Each scenario uses **categories 015, 016, 021, 034, 048, 062, and 065** with motion along geographic routes.
+Each scenario uses **categories 015, 016, 021, 034, 048, 062, 065, and 240** with motion along geographic routes.
 
 Custom scenarios saved from the UI go to `data/scenarios/` (local). Use **Save to repository** to store variants under `scenarios/shared/`.
 

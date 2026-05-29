@@ -16,4 +16,4 @@ def test_unknown_category_raises_key_error():
 def test_list_includes_cat034_and_cat048():
     categories = run_list_categories()
     category_ids = {definition.category for definition in categories}
-    assert_categories_include(category_ids, {15, 16, 21, 34, 48, 62, 65})
+    assert_categories_include(category_ids, {15, 16, 21, 34, 48, 62, 65, 240})

@@ -51,6 +51,10 @@ def apply_step_motion(
         base_time = float(base_fields.get("time_of_applicability_position", 0.0))
         fields["time_of_applicability_position"] = base_time + tick * motion.tick_interval_ms / 1000.0
 
+    if motion.update_time and "time_of_day" in fields:
+        base_time = float(base_fields.get("time_of_day", 0.0))
+        fields["time_of_day"] = base_time + tick * motion.tick_interval_ms / 1000.0
+
     if motion.derive_velocity and category == 62:
         if tick > 0:
             prev = (
@@ -121,6 +125,9 @@ def _waypoint_at_direction(
         )
 
     if category == 34:
+        return MotionWaypoint(azimuth=((start.azimuth or 0.0) + distance) % 360.0)
+
+    if category == 240:
         return MotionWaypoint(azimuth=((start.azimuth or 0.0) + distance) % 360.0)
 
     return start
@@ -255,6 +262,17 @@ def _apply_waypoint_to_fields(
     elif category == 34:
         if waypoint.azimuth is not None:
             fields["azimuth"] = waypoint.azimuth
+    elif category == 240:
+        if waypoint.azimuth is not None:
+            header = fields.setdefault("video_header", {})
+            start_az = float(header.get("start_az_deg", 0.0))
+            end_az = float(header.get("end_az_deg", 2.0))
+            beam = (end_az - start_az) % 360.0
+            if beam > 180.0 or beam < 0.1:
+                beam = 3.0
+            center = waypoint.azimuth % 360.0
+            header["start_az_deg"] = (center - beam / 2.0) % 360.0
+            header["end_az_deg"] = (center + beam / 2.0) % 360.0
 
 
 def _apply_derived_velocity(
@@ -332,6 +350,14 @@ def waypoint_from_fields(category: int, fields: dict[str, Any]) -> MotionWaypoin
         )
     if category == 34:
         return MotionWaypoint(azimuth=float(fields.get("azimuth", 0.0)))
+    if category == 240:
+        header = fields.get("video_header", {})
+        start_az = float(header.get("start_az_deg", 0.0))
+        end_az = float(header.get("end_az_deg", 2.0))
+        center = (start_az + end_az) / 2.0
+        if end_az < start_az:
+            center = (start_az + end_az + 360.0) / 2.0 % 360.0
+        return MotionWaypoint(azimuth=center % 360.0)
     return MotionWaypoint()
 
 
@@ -340,6 +366,8 @@ def default_step_distance(category: int) -> float:
         return 1.0
     if category == 34:
         return 10.0
+    if category == 240:
+        return 2.0
     if category == 15:
         return 1000.0
     return 1000.0
@@ -387,5 +415,7 @@ def default_end_waypoint(category: int, fields: dict[str, Any]) -> MotionWaypoin
             geometric_altitude_ft=start.geometric_altitude_ft,
         )
     if category == 34:
+        return MotionWaypoint(azimuth=((start.azimuth or 0.0) + 90.0) % 360.0)
+    if category == 240:
         return MotionWaypoint(azimuth=((start.azimuth or 0.0) + 90.0) % 360.0)
     return MotionWaypoint()

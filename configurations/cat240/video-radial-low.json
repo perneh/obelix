@@ -1,0 +1,22 @@
+{
+  "category": 240,
+  "name": "Radar video radial – low block",
+  "description": "Video message with Nano header, 8-bit resolution, and synthetic low-volume cells.",
+  "fields": {
+    "data_source": { "sac": 2, "sic": 1 },
+    "message_type": 2,
+    "video_sequence": 1,
+    "header_format": "nano",
+    "video_header": {
+      "start_az_deg": 45.0,
+      "end_az_deg": 48.0,
+      "start_range_cells": 0,
+      "cell_duration_ns": 1000
+    },
+    "video_resolution": { "compression": 0, "resolution": 4 },
+    "video_block_format": "low",
+    "video_cells_hex": "",
+    "include_time_of_day": 1,
+    "time_of_day": 36000.0
+  }
+}
