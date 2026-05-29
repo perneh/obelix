@@ -7,6 +7,7 @@ import pytest
 
 from tests.support.actions.regression_http import delete, get, get_text, post
 from tests.support.builders.scenarios import build_minimal_scenario
+from tests.support.udp_listener import udp_listener
 
 
 @pytest.mark.regression
@@ -25,3 +26,22 @@ def test_saved_scenarios(address, port):
     assert file_body["name"] == "Regression saved scenario"
 
     assert delete(address, port, f"/api/saved-scenarios/{scenario_id}")["status"] == "deleted"
+
+
+@pytest.mark.regression
+def test_saved_scenarios_send_udp(address, port, udp_host):
+    step_message = build_minimal_scenario()["steps"][0]["message"]
+    encode_payload = {"message": step_message}
+    encoded = post(address, port, "/api/encode", encode_payload)
+
+    with udp_listener() as (listen_port, sock):
+        sent = post(
+            address,
+            port,
+            "/api/send",
+            {**encode_payload, "host": udp_host, "port": listen_port, "protocol": "udp"},
+        )
+        assert sent["success"] is True
+        assert sent["protocol"] == "udp"
+        assert sent["bytes_sent"] == encoded["length"]
+        assert sock.recvfrom(65535)[0].hex().upper() == encoded["hex"]

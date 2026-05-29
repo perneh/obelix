@@ -5,6 +5,7 @@ import pytest
 from tests.support.actions.regression_http import get, post
 from tests.support.builders.api import build_encode_request
 from tests.support.builders.regression import fields_for_category
+from tests.support.udp_listener import udp_listener
 
 
 @pytest.mark.regression
@@ -26,3 +27,23 @@ def test_cat048(address, port):
     assert encoded["category"] == category
     assert encoded["length"] > 0
     assert len(encoded["hex"]) == encoded["length"] * 2
+
+
+@pytest.mark.regression
+def test_cat048_send_udp(address, port, udp_host):
+    category = 48
+    fields = fields_for_category(category)
+    encode_payload = build_encode_request(category=category, fields=fields)
+    encoded = post(address, port, "/api/encode", encode_payload)
+
+    with udp_listener() as (listen_port, sock):
+        sent = post(
+            address,
+            port,
+            "/api/send",
+            {**encode_payload, "host": udp_host, "port": listen_port, "protocol": "udp"},
+        )
+        assert sent["success"] is True
+        assert sent["protocol"] == "udp"
+        assert sent["bytes_sent"] == encoded["length"]
+        assert sock.recvfrom(65535)[0].hex().upper() == encoded["hex"]

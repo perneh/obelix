@@ -8,6 +8,7 @@ import httpx
 import pytest
 
 from tests.support.cli_options import TargetConfig
+from tests.support.udp_target import resolve_udp_host
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,12 @@ def address(target: TargetConfig) -> str:
 @pytest.fixture(scope="session")
 def port(target: TargetConfig) -> int:
     return target.port
+
+
+@pytest.fixture(scope="session")
+def udp_host(address: str) -> str:
+    """UDP destination as seen from the Obelix server (often host.docker.internal)."""
+    return resolve_udp_host(api_address=address)
 
 
 @pytest.fixture(scope="session", autouse=True)

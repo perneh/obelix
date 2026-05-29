@@ -2,9 +2,10 @@
 
 import pytest
 
-from tests.support.actions.regression_http import post, status
+from tests.support.actions.regression_http import post
 from tests.support.builders.api import build_encode_request
 from tests.support.builders.encoding import build_cat034_north_marker_fields
+from tests.support.udp_listener import udp_listener
 
 
 @pytest.mark.regression
@@ -21,22 +22,20 @@ def test_encode(address, port):
 
 
 @pytest.mark.regression
-def test_send(address, port):
-    payload = {
-        **build_encode_request(category=34, fields=build_cat034_north_marker_fields()),
-        "host": "127.0.0.1",
-        "port": 8600,
-        "protocol": "udp",
-    }
-    send_status = status(address, port, "POST", "/api/send", json=payload)
-    assert send_status in {200, 502}
+def test_send_udp(address, port, udp_host):
+    encode_payload = build_encode_request(category=34, fields=build_cat034_north_marker_fields())
+    encoded = post(address, port, "/api/encode", encode_payload)
 
-    if send_status == 200:
-        result = post(address, port, "/api/send", payload)
-        assert result["success"] is True
-        assert result["bytes_sent"] == 7
-        assert result["host"] == "127.0.0.1"
-        assert result["port"] == 8600
-        assert result["protocol"] == "udp"
-    else:
-        assert send_status == 502
+    with udp_listener() as (listen_port, sock):
+        sent = post(
+            address,
+            port,
+            "/api/send",
+            {**encode_payload, "host": udp_host, "port": listen_port, "protocol": "udp"},
+        )
+        assert sent["success"] is True
+        assert sent["protocol"] == "udp"
+        assert sent["bytes_sent"] == 7
+        assert sent["host"] == udp_host
+        assert sent["port"] == listen_port
+        assert sock.recvfrom(65535)[0].hex().upper() == encoded["hex"]

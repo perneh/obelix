@@ -4,6 +4,7 @@ import pytest
 
 from tests.support.actions.regression_http import get, post
 from tests.support.builders.scenarios import BALTIC_TEMPLATE_IDS
+from tests.support.udp_listener import udp_listener
 
 
 @pytest.mark.regression
@@ -28,3 +29,22 @@ def test_scenario_template_build(address, port):
         step for step in built["steps"] if step.get("motion") and step["motion"].get("enabled")
     )
     assert motion_step["motion"]["ticks"] == 5
+
+
+@pytest.mark.regression
+def test_scenario_templates_send_udp(address, port, udp_host):
+    step_message = get(address, port, "/api/scenario-templates/jas-bromma-visby")["steps"][0]["message"]
+    encode_payload = {"message": step_message}
+    encoded = post(address, port, "/api/encode", encode_payload)
+
+    with udp_listener() as (listen_port, sock):
+        sent = post(
+            address,
+            port,
+            "/api/send",
+            {**encode_payload, "host": udp_host, "port": listen_port, "protocol": "udp"},
+        )
+        assert sent["success"] is True
+        assert sent["protocol"] == "udp"
+        assert sent["bytes_sent"] == encoded["length"]
+        assert sock.recvfrom(65535)[0].hex().upper() == encoded["hex"]
