@@ -1,0 +1,13 @@
+{
+  "id": "north-marker-default",
+  "name": "North Marker (Cat 034)",
+  "description": "Default north marker service message",
+  "message": {
+    "category": 34,
+    "fields": {
+      "message_type": 1,
+      "data_source": {"sac": 1, "sic": 1},
+      "azimuth": 0.0
+    }
+  }
+}

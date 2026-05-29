@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Obelix – ASTERIX Message Tool</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Obelix</h1>
+    <p class="subtitle">Create, edit and send ASTERIX messages</p>
+  </header>
+
+  <main>
+    <nav class="tabs">
+      <button class="tab active" data-tab="message">Message Editor</button>
+      <button class="tab" data-tab="scenario">Scenario Builder</button>
+      <button class="tab" data-tab="library">Templates &amp; Scenarios</button>
+    </nav>
+
+    <!-- Message Editor -->
+    <section id="tab-message" class="panel active">
+      <div class="grid">
+        <aside class="sidebar">
+          <h2>Categories</h2>
+          <ul id="category-list" class="category-list"></ul>
+        </aside>
+
+        <div class="editor">
+          <div class="card">
+            <h2 id="category-title">Select a category</h2>
+            <p id="category-description" class="muted"></p>
+            <form id="message-form"></form>
+          </div>
+
+          <div class="card">
+            <h3>Encoded Output</h3>
+            <pre id="hex-output" class="hex-output">—</pre>
+            <div class="actions">
+              <button type="button" id="btn-encode" class="btn secondary">Generate Hex</button>
+              <button type="button" id="btn-send" class="btn primary">Send via UDP</button>
+              <button type="button" id="btn-save-template" class="btn secondary">Save as Template</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Transport</h3>
+            <div class="form-row">
+              <label>Host <input type="text" id="send-host" value="127.0.0.1"></label>
+              <label>Port <input type="number" id="send-port" value="8600" min="1" max="65535"></label>
+              <label>Protocol
+                <select id="send-protocol">
+                  <option value="udp" selected>UDP</option>
+                  <option value="tcp">TCP</option>
+                </select>
+              </label>
+            </div>
+            <p id="send-status" class="status"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scenario Builder -->
+    <section id="tab-scenario" class="panel">
+      <div class="card">
+        <h2>Scenario Builder</h2>
+        <div class="form-row">
+          <label>Scenario name <input type="text" id="scenario-name" placeholder="My scenario"></label>
+          <label>Loop count <input type="number" id="scenario-loops" value="1" min="0" title="0 = infinite"></label>
+          <label>Interval (ms) <input type="number" id="scenario-interval" value="1000" min="0"></label>
+        </div>
+        <div class="form-row">
+          <label>Host <input type="text" id="scenario-host" value="127.0.0.1"></label>
+          <label>Port <input type="number" id="scenario-port" value="8600" min="1" max="65535"></label>
+          <label>Protocol
+            <select id="scenario-protocol">
+              <option value="udp" selected>UDP</option>
+              <option value="tcp">TCP</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Steps</h3>
+        <div id="scenario-steps"></div>
+        <button type="button" id="btn-add-step" class="btn secondary">Add Step from Current Message</button>
+      </div>
+
+      <div class="card">
+        <div class="actions">
+          <button type="button" id="btn-start-scenario" class="btn primary">Start</button>
+          <button type="button" id="btn-pause-scenario" class="btn secondary">Pause</button>
+          <button type="button" id="btn-resume-scenario" class="btn secondary">Resume</button>
+          <button type="button" id="btn-stop-scenario" class="btn danger">Stop</button>
+          <button type="button" id="btn-save-scenario" class="btn secondary">Save Scenario</button>
+        </div>
+        <pre id="scenario-status" class="status-block">No active scenario</pre>
+      </div>
+    </section>
+
+    <!-- Library -->
+    <section id="tab-library" class="panel">
+      <div class="grid two-col">
+        <div class="card">
+          <h2>Message Templates</h2>
+          <ul id="template-list" class="item-list"></ul>
+        </div>
+        <div class="card">
+          <h2>Saved Scenarios</h2>
+          <ul id="saved-scenario-list" class="item-list"></ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

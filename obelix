@@ -1,0 +1,243 @@
+#!/usr/bin/env bash
+# Obelix – wrapper around Docker Compose for start/stop and dev mode.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+STATE_DIR="$ROOT/.obelix"
+STATE_FILE="$STATE_DIR/mode"
+COMPOSE_BASE=(-f "$ROOT/docker-compose.yml")
+COMPOSE_DEV=(-f "$ROOT/docker-compose.dev.yml")
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+info()  { echo -e "${BLUE}→${NC} $*"; }
+ok()    { echo -e "${GREEN}✓${NC} $*"; }
+warn()  { echo -e "${YELLOW}!${NC} $*"; }
+error() { echo -e "${RED}✗${NC} $*" >&2; }
+
+require_docker() {
+  if ! command -v docker >/dev/null 2>&1; then
+    error "Docker is not installed or not in PATH."
+    exit 1
+  fi
+  if ! docker compose version >/dev/null 2>&1; then
+    error "Docker Compose v2 is required (docker compose)."
+    exit 1
+  fi
+}
+
+save_mode() {
+  mkdir -p "$STATE_DIR"
+  echo "$1" > "$STATE_FILE"
+}
+
+read_mode() {
+  if [[ -f "$STATE_FILE" ]]; then
+    cat "$STATE_FILE"
+  else
+    echo "prod"
+  fi
+}
+
+compose_cmd() {
+  local mode="$1"
+  shift
+  if [[ "$mode" == "dev" ]]; then
+    docker compose "${COMPOSE_BASE[@]}" "${COMPOSE_DEV[@]}" "$@"
+  else
+    docker compose "${COMPOSE_BASE[@]}" "$@"
+  fi
+}
+
+compose_down_all() {
+  docker compose "${COMPOSE_BASE[@]}" "${COMPOSE_DEV[@]}" down --remove-orphans "$@" 2>/dev/null || true
+  docker compose "${COMPOSE_BASE[@]}" down --remove-orphans "$@" 2>/dev/null || true
+}
+
+usage() {
+  cat <<EOF
+Obelix – Docker Compose helper
+
+Usage:
+  ./obelix start [--dev] [--build] [--tools]   Start services (prod or dev mode)
+  ./obelix stop [--volumes]                    Stop all services (legacy --volumes ignored)
+  ./obelix restart [--dev] [--build]           Restart services
+  ./obelix status                              Show running containers
+  ./obelix logs [-f] [service]                 Show logs (default: app)
+  ./obelix shell [service]                     Open shell in container (default: app)
+  ./obelix build [--dev]                       Build images without starting
+  ./obelix mode                                Show current mode (prod/dev)
+
+Options:
+  --dev      Mount source code and run uvicorn with --reload
+  --build    Force image rebuild before start
+  --tools    Also start the UDP test receiver (port 8600)
+
+Examples:
+  ./obelix start              # Production mode
+  ./obelix start --dev        # Dev mode with hot reload
+  ./obelix start --dev --tools  # Dev + UDP receiver
+  ./obelix logs -f app
+  ./obelix stop
+
+App:         http://localhost:\${OBELIX_HTTP_PORT:-8000}
+UDP receiver: localhost:\${OBELIX_UDP_PORT:-8600} (with --tools)
+EOF
+}
+
+cmd_start() {
+  local mode="prod"
+  local build=""
+  local tools=""
+  local -a services=()
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --dev)   mode="dev"; shift ;;
+      --build) build="--build"; shift ;;
+      --tools) tools="--profile tools"; shift ;;
+      -h|--help) usage; exit 0 ;;
+      --*) error "Unknown option: $1"; usage; exit 1 ;;
+      *) services+=("$1"); shift ;;
+    esac
+  done
+
+  require_docker
+  compose_down_all
+
+  info "Starting Obelix in ${mode} mode..."
+  if [[ "$mode" == "dev" ]]; then
+    info "Source mounted – changes to backend/ and frontend/ reload automatically."
+  fi
+
+  # shellcheck disable=SC2086
+  compose_cmd "$mode" up -d $build $tools "${services[@]:-app}"
+
+  save_mode "$mode"
+  ok "Obelix is running (${mode} mode)"
+  echo ""
+  echo "  Web UI:  http://localhost:${OBELIX_HTTP_PORT:-8000}"
+  echo "  API docs: http://localhost:${OBELIX_HTTP_PORT:-8000}/docs"
+  if [[ -n "$tools" ]]; then
+    echo "  UDP recv: localhost:${OBELIX_UDP_PORT:-8600}"
+  fi
+  echo ""
+  echo "  Stop with: ./obelix stop"
+}
+
+cmd_stop() {
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --volumes) warn "--volumes has no effect (data is stored in ./data on the host)"; shift ;;
+      -h|--help) usage; exit 0 ;;
+      *) error "Unknown option: $1"; exit 1 ;;
+    esac
+  done
+
+  require_docker
+  info "Stopping Obelix..."
+  compose_down_all
+  rm -f "$STATE_FILE"
+  ok "Obelix stopped"
+}
+
+cmd_restart() {
+  local mode
+  mode="$(read_mode)"
+  local -a args=()
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --dev)   mode="dev"; args+=("--dev"); shift ;;
+      --build) args+=("--build"); shift ;;
+      --tools) args+=("--tools"); shift ;;
+      *) error "Unknown option: $1"; exit 1 ;;
+    esac
+  done
+
+  cmd_stop
+  cmd_start "${args[@]}"
+}
+
+cmd_status() {
+  require_docker
+  local mode
+  mode="$(read_mode)"
+  echo "Mode: ${mode}"
+  echo ""
+  compose_cmd "$mode" ps
+}
+
+cmd_logs() {
+  require_docker
+  local follow=""
+  local service="app"
+  local mode
+  mode="$(read_mode)"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -f|--follow) follow="-f"; shift ;;
+      -h|--help) usage; exit 0 ;;
+      --*) error "Unknown option: $1"; exit 1 ;;
+      *) service="$1"; shift ;;
+    esac
+  done
+
+  compose_cmd "$mode" logs $follow "$service"
+}
+
+cmd_shell() {
+  require_docker
+  local service="${1:-app}"
+  local mode
+  mode="$(read_mode)"
+  compose_cmd "$mode" exec "$service" /bin/bash
+}
+
+cmd_build() {
+  local mode="prod"
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --dev) mode="dev"; shift ;;
+      *) error "Unknown option: $1"; exit 1 ;;
+    esac
+  done
+
+  require_docker
+  info "Building images (${mode} mode)..."
+  compose_cmd "$mode" build
+  ok "Build complete"
+}
+
+cmd_mode() {
+  echo "$(read_mode)"
+}
+
+main() {
+  local cmd="${1:-}"
+  shift || true
+
+  case "$cmd" in
+    start)   cmd_start "$@" ;;
+    stop|down) cmd_stop "$@" ;;
+    restart) cmd_restart "$@" ;;
+    status|ps) cmd_status "$@" ;;
+    logs)    cmd_logs "$@" ;;
+    shell)   cmd_shell "$@" ;;
+    build)   cmd_build "$@" ;;
+    mode)    cmd_mode "$@" ;;
+    help|-h|--help|"") usage ;;
+    *)
+      error "Unknown command: $cmd"
+      usage
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"

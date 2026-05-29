@@ -1,0 +1,42 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: obelix-app
+    ports:
+      - "${OBELIX_HTTP_PORT:-8000}:8000"
+    environment:
+      OBELIX_TEMPLATES_DIR: /app/data/templates
+      OBELIX_SCENARIOS_DIR: /app/data/scenarios
+      OBELIX_HOST: 0.0.0.0
+      OBELIX_PORT: 8000
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    networks:
+      - obelix
+
+  udp-receiver:
+    image: python:3.12-slim
+    container_name: obelix-udp-receiver
+    profiles:
+      - tools
+    command: >
+      python -c "
+      import socket
+      s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+      s.bind(('0.0.0.0', 8600))
+      print('Listening on UDP 8600...', flush=True)
+      while True:
+          data, addr = s.recvfrom(4096)
+          print(f'{addr}: {data.hex().upper()}', flush=True)
+      "
+    ports:
+      - "${OBELIX_UDP_PORT:-8600}:8600/udp"
+    networks:
+      - obelix
+
+networks:
+  obelix:
+    name: obelix

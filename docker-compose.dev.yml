@@ -1,0 +1,28 @@
+# Development overrides – mount source code and enable hot reload.
+# Usage: ./obelix start --dev
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: obelix-app
+    command:
+      - uvicorn
+      - app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --reload
+      - --app-dir
+      - backend
+    volumes:
+      - ./backend:/app/backend
+      - ./frontend:/app/frontend
+      - ./data:/app/data
+      - ./pyproject.toml:/app/pyproject.toml:ro
+    environment:
+      OBELIX_TEMPLATES_DIR: /app/data/templates
+      OBELIX_SCENARIOS_DIR: /app/data/scenarios
+    restart: "no"
