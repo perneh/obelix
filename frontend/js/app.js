@@ -12,6 +12,18 @@ import {
   stepDistanceLabel,
   supportsMotion,
 } from "./motion.js";
+import {
+  applyScenarioToEditor,
+  countScenarioMessages,
+  readTemplateParamsFromForm,
+  renderTemplateCatalog,
+} from "./scenario-templates.js";
+import {
+  downloadScenarioJson,
+  formatApiError,
+  scenarioToJsonString,
+  validateScenarioJson,
+} from "./scenario-io.js";
 
 const API = "/api";
 
@@ -24,6 +36,7 @@ const state = {
   fieldValues: {},
   scenarioSteps: [],
   activeScenarioId: null,
+  activeTemplateId: null,
   scenarioRunning: false,
   scenarioPaused: false,
   statusPollTimer: null,
@@ -38,7 +51,8 @@ async function api(path, options = {}) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || res.statusText);
+    const message = formatApiError(err);
+    throw new Error(message);
   }
   if (res.status === 204) return null;
   return res.json();
@@ -53,7 +67,10 @@ document.querySelectorAll(".tab").forEach((tab) => {
     tab.classList.add("active");
     document.getElementById(`tab-${tab.dataset.tab}`).classList.add("active");
     if (tab.dataset.tab === "library") loadLibrary();
-    if (tab.dataset.tab === "scenario") updateScenarioUI();
+    if (tab.dataset.tab === "scenario") {
+      updateScenarioUI();
+      loadTemplateCatalog();
+    }
   });
 });
 
@@ -411,7 +428,10 @@ async function loadLibrary() {
         .map(
           (s) =>
             `<li>
-              <span>${s.name} (${s.steps.length} steps)</span>
+              <span>
+                ${s.tags?.includes("shared") || s.template_id ? '<span class="scope-badge scope-shared">repo</span>' : '<span class="scope-badge scope-local">local</span>'}
+                ${s.name} (${s.steps.length} steps${s.template_id ? ` · ${s.template_id}` : ""})
+              </span>
               <span class="item-actions">
                 <button data-load-scenario="${s.id}">Load</button>
                 <button data-delete-scenario="${s.id}">Delete</button>
@@ -812,12 +832,13 @@ async function updateStepFromEditor(index) {
 
 document.getElementById("btn-add-step").addEventListener("click", () => addStepFromCurrentMessage());
 
-function buildScenarioPayload() {
+function buildScenarioPayload(overrides = {}) {
   const name = document.getElementById("scenario-name").value || "Unnamed scenario";
-  const id = state.activeScenarioId || "scenario-" + Date.now().toString(36);
+  const id = overrides.id ?? state.activeScenarioId ?? "scenario-" + Date.now().toString(36);
   return {
     id,
-    name,
+    name: overrides.name ?? name,
+    description: overrides.description ?? "",
     transport: {
       host: document.getElementById("scenario-host").value,
       port: parseInt(document.getElementById("scenario-port").value, 10),
@@ -826,6 +847,8 @@ function buildScenarioPayload() {
     loop_count: parseInt(document.getElementById("scenario-loops").value, 10),
     interval_ms: parseInt(document.getElementById("scenario-interval").value, 10),
     steps: state.scenarioSteps,
+    template_id: overrides.template_id ?? state.activeTemplateId,
+    tags: overrides.tags ?? (state.activeTemplateId ? ["template", state.activeTemplateId] : []),
   };
 }
 
@@ -919,17 +942,9 @@ async function pollScenarioStatus() {
 }
 
 document.getElementById("btn-save-scenario").addEventListener("click", async () => {
-  if (state.scenarioSteps.length === 0) {
-    alert("Add at least one step.");
-    return;
-  }
   try {
-    const scenario = buildScenarioPayload();
-    await api("/saved-scenarios", {
-      method: "POST",
-      body: JSON.stringify(scenario),
-    });
-    alert(`Scenario "${scenario.name}" saved.`);
+    const scenario = await saveScenario("local");
+    alert(`Scenario "${scenario.name}" saved locally (data/scenarios/).`);
   } catch (err) {
     alert(`Failed: ${err.message}`);
   }
@@ -937,6 +952,11 @@ document.getElementById("btn-save-scenario").addEventListener("click", async () 
 
 async function loadSavedScenario(id) {
   const scenario = await api(`/saved-scenarios/${id}`);
+  applyScenarioFromPayload(scenario);
+  document.querySelector('[data-tab="scenario"]').click();
+}
+
+function applyScenarioFromPayload(scenario) {
   state.scenarioSteps = scenario.steps.map((step) => {
     if (step.motion) {
       ensureStepMotion(step);
@@ -944,14 +964,248 @@ async function loadSavedScenario(id) {
     return step;
   });
   state.activeScenarioId = scenario.id;
-  document.getElementById("scenario-name").value = scenario.name;
-  document.getElementById("scenario-loops").value = scenario.loop_count;
-  document.getElementById("scenario-interval").value = scenario.interval_ms;
-  document.getElementById("scenario-host").value = scenario.transport.host;
-  document.getElementById("scenario-port").value = scenario.transport.port;
-  document.getElementById("scenario-protocol").value = scenario.transport.protocol;
+  state.activeTemplateId = scenario.template_id ?? null;
+  applyScenarioToEditor(scenario);
+  syncTemplateParamsFromScenario(scenario);
   renderScenarioSteps();
-  document.querySelector('[data-tab="scenario"]').click();
+  syncJsonEditorFromScenario();
+  setTemplateStatus(
+    scenario.template_id
+      ? `Loaded "${scenario.name}" (from template ${scenario.template_id}).`
+      : `Loaded "${scenario.name}" (${scenario.steps.length} steps, ~${countScenarioMessages(scenario.steps)} messages).`
+  );
+}
+
+function syncTemplateParamsFromScenario(scenario) {
+  const motionStep = scenario.steps.find((s) => s.motion?.enabled);
+  if (motionStep?.motion) {
+    document.getElementById("tpl-ticks").value = motionStep.motion.ticks ?? 60;
+    document.getElementById("tpl-tick-interval").value =
+      motionStep.motion.tick_interval_ms ?? 2000;
+  }
+  const jas62 = scenario.steps.find(
+    (s) => s.message.category === 62 && s.message.fields?.track_number === 101
+  );
+  const mig62 = scenario.steps.find(
+    (s) => s.message.category === 62 && s.message.fields?.track_number === 201
+  );
+  if (jas62) {
+    document.getElementById("tpl-jas-track").value = jas62.message.fields.track_number;
+    if (jas62.message.fields.mode3a != null) {
+      document.getElementById("tpl-jas-mode3a").value = jas62.message.fields.mode3a;
+    }
+    if (jas62.message.fields.flight_level != null) {
+      document.getElementById("tpl-jas-fl").value = jas62.message.fields.flight_level;
+    }
+  }
+  if (mig62) {
+    document.getElementById("tpl-mig-track").value = mig62.message.fields.track_number;
+    if (mig62.message.fields.mode3a != null) {
+      document.getElementById("tpl-mig-mode3a").value = mig62.message.fields.mode3a;
+    }
+    if (mig62.message.fields.flight_level != null) {
+      document.getElementById("tpl-mig-fl").value = mig62.message.fields.flight_level;
+    }
+  }
+}
+
+function setTemplateStatus(text) {
+  const el = document.getElementById("template-status");
+  if (el) el.textContent = text;
+}
+
+function setJsonStatus(text, isError = false) {
+  const el = document.getElementById("scenario-json-status");
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle("json-status-error", isError);
+}
+
+function syncJsonEditorFromScenario() {
+  const editor = document.getElementById("scenario-json-editor");
+  if (!editor) return;
+  if (state.scenarioSteps.length === 0) {
+    editor.value = "";
+    setJsonStatus("No steps — load a template or add steps, then refresh.");
+    return;
+  }
+  editor.value = scenarioToJsonString(buildScenarioPayload());
+  setJsonStatus("Editor synced with current scenario.");
+}
+
+async function importScenarioFromJsonText(text, sourceLabel = "JSON") {
+  try {
+    setJsonStatus(`Validating ${sourceLabel}…`);
+    const scenario = await validateScenarioJson(api, text);
+    applyScenarioFromPayload(scenario);
+    syncJsonEditorFromScenario();
+    setJsonStatus(`Imported "${scenario.name}" (${scenario.steps.length} steps).`);
+    document.querySelector('[data-tab="scenario"]')?.click();
+    return scenario;
+  } catch (err) {
+    setJsonStatus(`Import failed: ${err.message}`, true);
+    throw err;
+  }
+}
+
+async function importScenarioFromFile(file) {
+  if (!file) return;
+  const text = await file.text();
+  await importScenarioFromJsonText(text, file.name);
+}
+
+function wireScenarioJsonIo() {
+  document.getElementById("btn-export-scenario")?.addEventListener("click", () => {
+    if (state.scenarioSteps.length === 0) {
+      alert("Nothing to export — add steps or load a template first.");
+      return;
+    }
+    const scenario = buildScenarioPayload();
+    downloadScenarioJson(scenario);
+    syncJsonEditorFromScenario();
+    setJsonStatus(`Exported ${scenario.id}.json`);
+  });
+
+  document.getElementById("btn-sync-json-editor")?.addEventListener("click", syncJsonEditorFromScenario);
+
+  document.getElementById("btn-apply-json-editor")?.addEventListener("click", async () => {
+    const text = document.getElementById("scenario-json-editor")?.value ?? "";
+    try {
+      await importScenarioFromJsonText(text, "editor");
+    } catch {
+      // status already set
+    }
+  });
+
+  const fileInput = document.getElementById("scenario-import-file");
+  document.getElementById("btn-import-scenario")?.addEventListener("click", () => {
+    fileInput?.click();
+  });
+  fileInput?.addEventListener("change", async () => {
+    const file = fileInput.files?.[0];
+    fileInput.value = "";
+    if (!file) return;
+    try {
+      await importScenarioFromFile(file);
+    } catch {
+      alert("Import failed — see JSON status below the editor.");
+    }
+  });
+
+  const libraryFileInput = document.getElementById("scenario-library-import-file");
+  document.getElementById("btn-library-import-scenario")?.addEventListener("click", () => {
+    libraryFileInput?.click();
+  });
+  libraryFileInput?.addEventListener("change", async () => {
+    const file = libraryFileInput.files?.[0];
+    libraryFileInput.value = "";
+    if (!file) return;
+    try {
+      await importScenarioFromFile(file);
+    } catch {
+      alert("Import failed — open Scenario Builder to see validation errors.");
+    }
+  });
+}
+
+async function loadTemplateCatalog() {
+  try {
+    const catalog = await api("/scenario-templates");
+    renderTemplateCatalog(catalog, (templateId) => {
+      state.activeTemplateId = templateId;
+      buildFromTemplate(templateId);
+    });
+  } catch (err) {
+    setTemplateStatus(`Could not load templates: ${err.message}`);
+  }
+}
+
+async function buildFromTemplate(templateId) {
+  const id = templateId || state.activeTemplateId;
+  if (!id) {
+    alert("Select a template first.");
+    return;
+  }
+  try {
+    setTemplateStatus("Building scenario…");
+    const params = readTemplateParamsFromForm();
+    const scenario = await api(`/scenario-templates/${id}/build`, {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
+    applyScenarioFromPayload(scenario);
+    state.activeTemplateId = id;
+    updateScenarioUI();
+  } catch (err) {
+    setTemplateStatus(`Build failed: ${err.message}`);
+    alert(`Failed to build template: ${err.message}`);
+  }
+}
+
+document.getElementById("btn-rebuild-template")?.addEventListener("click", () => {
+  if (!state.activeTemplateId) {
+    alert("Load a template first (JAS, MiG, or Baltic combined).");
+    return;
+  }
+  buildFromTemplate(state.activeTemplateId);
+});
+
+document.getElementById("btn-save-scenario-shared")?.addEventListener("click", async () => {
+  if (state.scenarioSteps.length === 0) {
+    alert("Load or build a scenario first.");
+    return;
+  }
+  const defaultName = state.activeTemplateId
+    ? `${state.activeTemplateId}-custom`
+    : "custom-scenario";
+  const name =
+    document.getElementById("scenario-name").value ||
+    prompt("Name for repository scenario:", defaultName);
+  if (!name) return;
+  document.getElementById("scenario-name").value = name;
+  const id =
+    prompt(
+      "Scenario id (filename without .json):",
+      name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+    ) || `scenario-${Date.now().toString(36)}`;
+  try {
+    const scenario = buildScenarioPayload({ id, name, tags: ["shared", ...(state.activeTemplateId ? [state.activeTemplateId] : [])] });
+    await api("/saved-scenarios?scope=shared", {
+      method: "POST",
+      body: JSON.stringify(scenario),
+    });
+    state.activeScenarioId = scenario.id;
+    alert(`Scenario "${scenario.name}" saved to repository (scenarios/shared/).`);
+    setTemplateStatus(`Saved to repository as ${scenario.id}.json`);
+  } catch (err) {
+    alert(`Failed: ${err.message}`);
+  }
+});
+
+document.getElementById("btn-duplicate-scenario")?.addEventListener("click", () => {
+  if (state.scenarioSteps.length === 0) {
+    alert("Nothing to duplicate.");
+    return;
+  }
+  const baseName = document.getElementById("scenario-name").value || "Scenario copy";
+  document.getElementById("scenario-name").value = `${baseName} (copy)`;
+  state.activeScenarioId = "scenario-" + Date.now().toString(36);
+  setTemplateStatus("Duplicated — edit freely, then save locally or to repository.");
+  updateScenarioUI();
+});
+
+async function saveScenario(scope = "local") {
+  if (state.scenarioSteps.length === 0) {
+    alert("Add at least one step.");
+    return;
+  }
+  const scenario = buildScenarioPayload();
+  await api(`/saved-scenarios?scope=${scope}`, {
+    method: "POST",
+    body: JSON.stringify(scenario),
+  });
+  state.activeScenarioId = scenario.id;
+  return scenario;
 }
 
 async function deleteSavedScenario(id) {
@@ -965,3 +1219,5 @@ async function deleteSavedScenario(id) {
 loadCategories();
 renderScenarioSteps();
 updateScenarioUI();
+loadTemplateCatalog();
+wireScenarioJsonIo();

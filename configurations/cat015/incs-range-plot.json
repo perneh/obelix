@@ -1,0 +1,20 @@
+{
+  "id": "incs-range-plot",
+  "name": "INCS Range Plot",
+  "description": "Cat 015 measurement plot at 5 km / 45° with pair link to Cat 016",
+  "scope": "shared",
+  "message": {
+    "category": 15,
+    "fields": {
+      "data_source": {"sac": 1, "sic": 2},
+      "message_type": 1,
+      "report_generation": 0,
+      "service_id": 1,
+      "time_of_applicability": 44100.0,
+      "track_plot_number": 100,
+      "measurement_id": {"pair_id": 1, "observation_number": 1},
+      "position_type": 2,
+      "range_azimuth": {"range_m": 5000.0, "azimuth_deg": 45.0}
+    }
+  }
+}

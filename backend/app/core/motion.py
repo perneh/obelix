@@ -148,6 +148,7 @@ def _lerp_waypoint(a: MotionWaypoint, b: MotionWaypoint, t: float) -> MotionWayp
         y_m=_lerp_optional(a.y_m, b.y_m, t),
         rho_nm=_lerp_optional(a.rho_nm, b.rho_nm, t),
         theta_deg=_lerp_angular(a.theta_deg, b.theta_deg, t),
+        range_m=_lerp_optional(a.range_m, b.range_m, t),
         azimuth=_lerp_angular(a.azimuth, b.azimuth, t),
         geometric_altitude_ft=_lerp_optional(a.geometric_altitude_ft, b.geometric_altitude_ft, t),
         flight_level=_lerp_optional(a.flight_level, b.flight_level, t),
@@ -207,6 +208,22 @@ def _apply_waypoint_to_fields(
                 pos["rho_nm"] = waypoint.rho_nm
             if waypoint.theta_deg is not None:
                 pos["theta_deg"] = waypoint.theta_deg
+    elif category == 15:
+        position_type = int(fields.get("position_type", 2))
+        if position_type == 1:
+            if waypoint.latitude_deg is not None or waypoint.longitude_deg is not None:
+                wgs = fields.setdefault("wgs84", {})
+                if waypoint.latitude_deg is not None:
+                    wgs["latitude_deg"] = waypoint.latitude_deg
+                if waypoint.longitude_deg is not None:
+                    wgs["longitude_deg"] = waypoint.longitude_deg
+        elif position_type == 2:
+            if waypoint.range_m is not None or waypoint.azimuth is not None:
+                ra = fields.setdefault("range_azimuth", {})
+                if waypoint.range_m is not None:
+                    ra["range_m"] = waypoint.range_m
+                if waypoint.azimuth is not None:
+                    ra["azimuth_deg"] = waypoint.azimuth
     elif category == 34:
         if waypoint.azimuth is not None:
             fields["azimuth"] = waypoint.azimuth
@@ -264,6 +281,19 @@ def waypoint_from_fields(category: int, fields: dict[str, Any]) -> MotionWaypoin
             rho_nm=float(pos.get("rho_nm", 0.0)),
             theta_deg=float(pos.get("theta_deg", 0.0)),
         )
+    if category == 15:
+        position_type = int(fields.get("position_type", 2))
+        wgs = fields.get("wgs84", {})
+        ra = fields.get("range_azimuth", {})
+        if position_type == 1:
+            return MotionWaypoint(
+                latitude_deg=float(wgs.get("latitude_deg", 0.0)),
+                longitude_deg=float(wgs.get("longitude_deg", 0.0)),
+            )
+        return MotionWaypoint(
+            range_m=float(ra.get("range_m", 0.0)),
+            azimuth=float(ra.get("azimuth_deg", 0.0)),
+        )
     if category == 34:
         return MotionWaypoint(azimuth=float(fields.get("azimuth", 0.0)))
     return MotionWaypoint()
@@ -274,6 +304,8 @@ def default_step_distance(category: int) -> float:
         return 1.0
     if category == 34:
         return 10.0
+    if category == 15:
+        return 1000.0
     return 1000.0
 
 
@@ -299,6 +331,17 @@ def default_end_waypoint(category: int, fields: dict[str, Any]) -> MotionWaypoin
         return MotionWaypoint(
             rho_nm=min((start.rho_nm or 0.0) + 20.0, 256.0),
             theta_deg=((start.theta_deg or 0.0) + 90.0) % 360.0,
+        )
+    if category == 15:
+        position_type = int(fields.get("position_type", 2))
+        if position_type == 1:
+            return MotionWaypoint(
+                latitude_deg=(start.latitude_deg or 0.0) + 0.08,
+                longitude_deg=(start.longitude_deg or 0.0) + 0.12,
+            )
+        return MotionWaypoint(
+            range_m=(start.range_m or 0.0) + 10_000.0,
+            azimuth=((start.azimuth or 0.0) + 45.0) % 360.0,
         )
     if category == 34:
         return MotionWaypoint(azimuth=((start.azimuth or 0.0) + 90.0) % 360.0)

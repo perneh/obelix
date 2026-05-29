@@ -1,6 +1,6 @@
 /** Category route/motion helpers for the scenario builder. */
 
-export const MOTION_CATEGORIES = new Set([34, 48, 62]);
+export const MOTION_CATEGORIES = new Set([15, 34, 48, 62]);
 
 export function supportsMotion(category) {
   return MOTION_CATEGORIES.has(category);
@@ -19,6 +19,19 @@ export function stepDistanceHint(category) {
 }
 
 export function motionFieldConfig(category, fields) {
+  if (category === 15) {
+    const positionType = Number(fields?.position_type ?? 2);
+    if (positionType === 1) {
+      return [
+        { key: "latitude_deg", label: "End latitude", unit: "°" },
+        { key: "longitude_deg", label: "End longitude", unit: "°" },
+      ];
+    }
+    return [
+      { key: "range_m", label: "End range", unit: "m" },
+      { key: "azimuth", label: "End azimuth", unit: "°" },
+    ];
+  }
   if (category === 62) {
     const positionType = Number(fields?.position_type ?? 2);
     if (positionType === 1) {
@@ -59,6 +72,7 @@ export function formatWaypointSummary(category, fields, waypoint) {
 export function defaultStepDistance(category) {
   if (category === 48) return 1.0;
   if (category === 34) return 10.0;
+  if (category === 15) return 1000.0;
   return 1000.0;
 }
 

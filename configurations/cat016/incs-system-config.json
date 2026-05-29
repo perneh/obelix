@@ -1,0 +1,22 @@
+{
+  "id": "incs-system-config",
+  "name": "INCS System Configuration",
+  "description": "Cat 016 system configuration with Tx/Rx pair and reference point",
+  "scope": "shared",
+  "message": {
+    "category": 16,
+    "fields": {
+      "data_source": {"sac": 1, "sic": 1},
+      "service_id": 1,
+      "message_type": 1,
+      "time_of_day": 44100.0,
+      "reporting_period_s": 60,
+      "pair": {"pair_id": 1, "transmitter_id": 10, "receiver_id": 20},
+      "reference_point": {
+        "latitude_deg": 59.3293,
+        "longitude_deg": 18.0686,
+        "height_m": 25.0
+      }
+    }
+  }
+}

@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.api import categories, configurations, encode, scenarios, send, storage
+from app.api import categories, configurations, encode, scenario_templates, scenarios, send, storage
 from app.core.config import get_settings
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
@@ -13,6 +13,7 @@ FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 def create_app() -> FastAPI:
     settings = get_settings()
     settings.shared_configurations_dir.mkdir(parents=True, exist_ok=True)
+    settings.shared_scenarios_dir.mkdir(parents=True, exist_ok=True)
     settings.local_configurations_dir.mkdir(parents=True, exist_ok=True)
     settings.scenarios_dir.mkdir(parents=True, exist_ok=True)
 
@@ -34,6 +35,7 @@ def create_app() -> FastAPI:
     app.include_router(encode.router, prefix="/api")
     app.include_router(send.router, prefix="/api")
     app.include_router(configurations.router, prefix="/api")
+    app.include_router(scenario_templates.router, prefix="/api")
     app.include_router(scenarios.router, prefix="/api")
     app.include_router(storage.router, prefix="/api")
 

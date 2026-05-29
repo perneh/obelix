@@ -828,6 +828,97 @@ main {
   color: var(--muted);
 }
 
+/* Scenario templates */
+.scenario-templates-card {
+  border-color: #1e3a5f;
+}
+
+.template-catalog {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.template-card {
+  padding: 1rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.template-card h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+}
+
+.template-card p {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+}
+
+.template-meta {
+  font-size: 0.8rem !important;
+  color: var(--muted);
+}
+
+.template-params-fieldset {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.template-params-fieldset legend {
+  padding: 0 0.35rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+#template-status {
+  margin-top: 0.75rem;
+  min-height: 1.25rem;
+}
+
+.scenario-json-card {
+  border-color: var(--border);
+}
+
+.json-editor-label {
+  display: block;
+  margin: 0.75rem 0 0.35rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.json-editor {
+  width: 100%;
+  min-height: 12rem;
+  padding: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.json-editor:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+#scenario-json-status.json-status-error {
+  color: #f87171;
+}
+
+.library-scenario-actions {
+  margin-bottom: 0.75rem;
+}
+
 @media (max-width: 768px) {
   .grid, .grid.two-col {
     grid-template-columns: 1fr;

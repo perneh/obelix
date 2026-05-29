@@ -12,6 +12,7 @@ COPY pyproject.toml README.md ./
 COPY backend/ backend/
 COPY frontend/ frontend/
 COPY configurations/ configurations/
+COPY scenarios/ scenarios/
 COPY docs/categories/ docs/categories/
 COPY data/ data/
 

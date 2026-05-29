@@ -9,6 +9,7 @@ class Settings(BaseSettings):
 
     data_dir: Path = Path("data")
     shared_configurations_dir: Path = Path("configurations")
+    shared_scenarios_dir: Path = Path("scenarios/shared")
     local_configurations_dir: Path = Path("data/configurations")
     templates_dir: Path = Path("data/templates")  # legacy alias
     scenarios_dir: Path = Path("data/scenarios")

@@ -4,6 +4,8 @@ Obelix implements a subset of ASTERIX categories as encoders with matching UI fo
 
 | Category | Name | Edition | Help |
 |----------|------|---------|------|
+| **015** | INCS Target Reports | 1.1 (Part 28) | [cat015.md](cat015.md) |
+| **016** | INCS Configuration Reports | 1.0 (Part 30) | [cat016.md](cat016.md) |
 | **034** | Monoradar Service Messages | 1.29 | [cat034.md](cat034.md) |
 | **048** | Monoradar Target Reports | 1.32 | [cat048.md](cat048.md) |
 | **062** | System Track Data | 1.21 (Eurocontrol Part 9) | [cat062.md](cat062.md) |

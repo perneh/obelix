@@ -12,17 +12,20 @@ def list_saved_scenarios() -> list[Scenario]:
 
 
 @router.post("/saved-scenarios", response_model=Scenario)
-def save_scenario(scenario: Scenario) -> Scenario:
-    storage.save_scenario(scenario.id, scenario)
+def save_scenario(scenario: Scenario, scope: str = "local") -> Scenario:
+    shared = scope == "shared"
+    storage.save_scenario(scenario.id, scenario, shared=shared)
     return scenario
 
 
 @router.get("/saved-scenarios/{scenario_id}", response_model=Scenario)
 def get_saved_scenario(scenario_id: str) -> Scenario:
-    try:
-        return storage.load_scenario(scenario_id, Scenario)
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    for shared in (True, False):
+        try:
+            return storage.load_scenario(scenario_id, Scenario, shared=shared)
+        except FileNotFoundError:
+            continue
+    raise HTTPException(status_code=404, detail=f"Scenario {scenario_id} not found")
 
 
 @router.delete("/saved-scenarios/{scenario_id}")

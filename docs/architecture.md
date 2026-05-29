@@ -126,6 +126,8 @@ obelix/
 
 | Category | Name | Edition |
 |----------|------|---------|
+| 015 | INCS Target Reports | 1.1 |
+| 016 | INCS Configuration Reports | 1.0 |
 | 034 | Monoradar Service Messages | 1.29 |
 | 048 | Monoradar Target Reports | 1.32 |
 | 062 | System Track Data | 1.21 |

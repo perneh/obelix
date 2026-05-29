@@ -57,6 +57,7 @@ class MotionWaypoint(BaseModel):
     y_m: float | None = None
     rho_nm: float | None = None
     theta_deg: float | None = None
+    range_m: float | None = None
     azimuth: float | None = None
     geometric_altitude_ft: float | None = None
     flight_level: float | None = None
@@ -103,6 +104,26 @@ class Scenario(BaseModel):
     loop_count: int = Field(1, ge=0, description="0 = infinite loop")
     interval_ms: int = Field(1000, ge=0, description="Delay between full scenario loops")
     steps: list[ScenarioStep] = Field(default_factory=list)
+    template_id: str | None = Field(None, description="Source template if created from catalog")
+    tags: list[str] = Field(default_factory=list)
+
+
+class ScenarioTemplateParams(BaseModel):
+    """Customisation knobs when instantiating a built-in scenario template."""
+
+    tick_interval_ms: int = Field(2000, ge=0)
+    ticks: int = Field(60, ge=2)
+    jas_track_number: int = Field(101, ge=0, le=65535)
+    mig_track_number: int = Field(201, ge=0, le=65535)
+    jas_mode3a: int = Field(7777, ge=0, le=7777)
+    mig_mode3a: int = Field(7770, ge=0, le=7777)
+    jas_flight_level: float = Field(350.0)
+    mig_flight_level: float = Field(410.0)
+    loop_count: int = Field(1, ge=0)
+    host: str = "host.docker.internal"
+    port: int = Field(8600, ge=1, le=65535)
+    scenario_id: str | None = Field(None, description="Override scenario id when saving")
+    scenario_name: str | None = None
 
 
 class ScenarioRunRequest(BaseModel):

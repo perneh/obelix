@@ -88,6 +88,7 @@ When **Send multiple messages** is enabled on a step, Obelix sends several messa
 | Category | Animated fields |
 |----------|-------------------|
 | **062** | WGS-84 lat/lon or Cartesian X/Y; optional time and derived velocity |
+| **015** | WGS-84 or range/azimuth (INCS target reports) |
 | **048** | Range (RHO) and azimuth (THETA) |
 | **034** | Antenna azimuth (sector crossing) |
 
@@ -108,7 +109,36 @@ Save message configurations from the UI:
 
 Load from the **Configurations & Scenarios** tab. See [configurations/README.md](../configurations/README.md) for git workflow.
 
-Scenarios are stored under `data/scenarios/` (local by default).
+Scenarios are stored under `data/scenarios/` (local) or `scenarios/shared/` (repository).
+
+### Built-in Baltic exercise templates
+
+The **Scenario Builder** tab includes three realistic templates that exercise **all implemented categories** (015, 016, 034, 048, 062):
+
+| Template | Description |
+|----------|-------------|
+| **JAS 39 – Bromma → Visby** | Friendly Gripen transit with INCS config, monoradar service, plots, INCS target report, and SDPS system track |
+| **Hostile MiG – Kaliningrad → Visby** | Non-cooperative track approaching Visby from Kaliningrad |
+| **Baltic exercise – JAS + MiG combined** | Interleaved friendly and hostile traffic |
+
+1. Open **Scenario Builder** → **Scenario templates & editor**.
+2. Click **Load template** on a card (or adjust parameters and **Rebuild from parameters**).
+3. Edit individual steps, transport, and timing as needed.
+4. **Save Scenario** (local) or **Save to repository** to commit a variant under `scenarios/shared/`.
+
+API: `GET /api/scenario-templates`, `POST /api/scenario-templates/{id}/build` with custom track numbers, Mode 3/A, flight levels, ticks, and interval.
+
+See [scenarios/README.md](../scenarios/README.md) for regenerating shared JSON from Python.
+
+### Export / import JSON
+
+Scenarios are JSON files. From **Scenario Builder → JSON export / import**:
+
+1. **Export JSON** — downloads `{scenario-id}.json` for editing in VS Code or any editor
+2. **Import JSON file** — pick an edited file; Obelix validates structure and categories
+3. **JSON editor** — paste or edit inline, then **Apply JSON**
+
+The same file format is used in `scenarios/shared/` and `data/scenarios/`. Validation runs via `POST /api/scenarios/validate` before loading into the builder.
 
 ## Testing a UDP receiver
 

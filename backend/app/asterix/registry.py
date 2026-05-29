@@ -5,11 +5,15 @@ from __future__ import annotations
 from typing import Type
 
 from app.asterix.base import AsterixCategory, CategoryDefinition
+from app.asterix.categories.cat015 import Cat015
 from app.asterix.categories.cat034 import Cat034
 from app.asterix.categories.cat048 import Cat048
 from app.asterix.categories.cat062 import Cat062
+from app.asterix.categories.cat016 import Cat016
 
 _REGISTRY: dict[int, Type[AsterixCategory]] = {
+    15: Cat015,
+    16: Cat016,
     34: Cat034,
     48: Cat048,
     62: Cat062,

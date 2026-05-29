@@ -118,6 +118,50 @@
         </ol>
       </div>
 
+      <div class="card scenario-templates-card">
+        <h3>Scenario templates &amp; editor</h3>
+        <p class="muted section-desc">
+          Realistic Baltic airspace exercises using <strong>all categories</strong> (015, 016, 034, 048, 062).
+          Load a template, adjust parameters, edit steps below, then save your own variant.
+        </p>
+        <div id="template-catalog" class="template-catalog"></div>
+        <fieldset class="template-params-fieldset">
+          <legend>Template parameters</legend>
+          <div class="form-row">
+            <label>Messages per route (ticks)
+              <input type="number" id="tpl-ticks" value="60" min="2">
+            </label>
+            <label>Interval (ms)
+              <input type="number" id="tpl-tick-interval" value="2000" min="0">
+            </label>
+            <label>JAS track #
+              <input type="number" id="tpl-jas-track" value="101" min="0">
+            </label>
+            <label>MiG track #
+              <input type="number" id="tpl-mig-track" value="201" min="0">
+            </label>
+            <label>JAS Mode 3/A (octal)
+              <input type="number" id="tpl-jas-mode3a" value="7777" min="0" max="7777">
+            </label>
+            <label>MiG Mode 3/A (octal)
+              <input type="number" id="tpl-mig-mode3a" value="7770" min="0" max="7777">
+            </label>
+            <label>JAS FL
+              <input type="number" id="tpl-jas-fl" value="350" step="any">
+            </label>
+            <label>MiG FL
+              <input type="number" id="tpl-mig-fl" value="410" step="any">
+            </label>
+          </div>
+          <div class="actions">
+            <button type="button" id="btn-rebuild-template" class="btn secondary">Rebuild from parameters</button>
+            <button type="button" id="btn-save-scenario-shared" class="btn secondary">Save to repository</button>
+            <button type="button" id="btn-duplicate-scenario" class="btn secondary">Duplicate scenario</button>
+          </div>
+          <p id="template-status" class="field-hint"></p>
+        </fieldset>
+      </div>
+
       <div class="card">
         <div class="card-section-header">
           <div>
@@ -170,6 +214,24 @@
         </fieldset>
       </div>
 
+      <div class="card scenario-json-card">
+        <h3>JSON export / import</h3>
+        <p class="muted section-desc">
+          Scenarios are stored as JSON. Export to edit in VS Code or another editor, then import the file back.
+        </p>
+        <div class="actions">
+          <button type="button" id="btn-export-scenario" class="btn secondary">Export JSON</button>
+          <button type="button" id="btn-import-scenario" class="btn secondary">Import JSON file</button>
+          <button type="button" id="btn-sync-json-editor" class="btn secondary">Refresh editor</button>
+          <button type="button" id="btn-apply-json-editor" class="btn primary">Apply JSON</button>
+        </div>
+        <input type="file" id="scenario-import-file" accept=".json,application/json" hidden>
+        <label class="json-editor-label" for="scenario-json-editor">Scenario JSON</label>
+        <textarea id="scenario-json-editor" class="json-editor" rows="14" spellcheck="false"
+          placeholder='Paste or edit scenario JSON here, then click "Apply JSON".'></textarea>
+        <p id="scenario-json-status" class="field-hint"></p>
+      </div>
+
       <div class="card scenario-run-card">
         <h3>Run scenario</h3>
         <p class="muted section-desc">Sends each step in order. While a step has <em>Animate route</em> enabled, multiple messages are sent along the route at the configured interval.</p>
@@ -206,6 +268,11 @@
         </div>
         <div class="card">
           <h2>Saved Scenarios</h2>
+          <p class="muted">Repository scenarios live in <code>scenarios/shared/</code>. Local saves go to <code>data/scenarios/</code>. Built-in templates are loaded from the Scenario Builder tab.</p>
+          <div class="actions library-scenario-actions">
+            <button type="button" id="btn-library-import-scenario" class="btn secondary btn-sm">Import JSON file</button>
+          </div>
+          <input type="file" id="scenario-library-import-file" accept=".json,application/json" hidden>
           <ul id="saved-scenario-list" class="item-list"></ul>
         </div>
       </div>

@@ -61,24 +61,39 @@ def delete_template(template_id: str) -> None:
         path.unlink()
 
 
-def save_scenario(scenario_id: str, data: BaseModel) -> Path:
-    path = get_settings().scenarios_dir / f"{scenario_id}.json"
+def save_scenario(scenario_id: str, data: BaseModel, *, shared: bool = False) -> Path:
+    root = get_settings().shared_scenarios_dir if shared else get_settings().scenarios_dir
+    path = root / f"{scenario_id}.json"
     _save_model(path, data)
     return path
 
 
-def load_scenario(scenario_id: str, model_cls: type[T]) -> T:
-    path = get_settings().scenarios_dir / f"{scenario_id}.json"
+def load_scenario(scenario_id: str, model_cls: type[T], *, shared: bool = False) -> T:
+    root = get_settings().shared_scenarios_dir if shared else get_settings().scenarios_dir
+    path = root / f"{scenario_id}.json"
     if not path.exists():
         raise FileNotFoundError(f"Scenario {scenario_id} not found")
     return _load_model(path, model_cls)
 
 
 def list_scenarios(model_cls: type[T]) -> list[T]:
-    return _list_models(get_settings().scenarios_dir, model_cls)
+    local = _list_models(get_settings().scenarios_dir, model_cls)
+    shared = _list_models(get_settings().shared_scenarios_dir, model_cls)
+    for item in shared:
+        if hasattr(item, "tags") and "shared" not in item.tags:
+            item.tags.append("shared")
+    seen = {item.id for item in shared}
+    merged = list(shared)
+    for item in local:
+        if item.id not in seen:
+            merged.append(item)
+    return merged
 
 
 def delete_scenario(scenario_id: str) -> None:
-    path = get_settings().scenarios_dir / f"{scenario_id}.json"
-    if path.exists():
-        path.unlink()
+    for shared in (True, False):
+        root = get_settings().shared_scenarios_dir if shared else get_settings().scenarios_dir
+        path = root / f"{scenario_id}.json"
+        if path.exists():
+            path.unlink()
+            return

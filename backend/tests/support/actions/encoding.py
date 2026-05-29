@@ -5,13 +5,24 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from app.asterix.categories.cat015 import Cat015
+from app.asterix.categories.cat016 import Cat016
 from app.asterix.categories.cat034 import Cat034
 from app.asterix.categories.cat048 import Cat048
-from app.asterix.categories.cat062 import Cat062
 from app.asterix.categories.cat062 import Cat062
 from app.asterix.registry import encode_message, encode_message_hex, get_category, list_categories
 
 logger = logging.getLogger(__name__)
+
+
+def run_encode_cat015_datablock(fields: dict[str, Any]) -> bytes:
+    logger.debug("Encoding Cat015 datablock with keys: %s", list(fields.keys()))
+    return Cat015.encode_datablock(fields)
+
+
+def run_encode_cat016_datablock(fields: dict[str, Any]) -> bytes:
+    logger.debug("Encoding Cat016 datablock with keys: %s", list(fields.keys()))
+    return Cat016.encode_datablock(fields)
 
 
 def run_encode_cat034_datablock(fields: dict[str, Any]) -> bytes:

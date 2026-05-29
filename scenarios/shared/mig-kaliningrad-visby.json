@@ -1,0 +1,283 @@
+{
+  "id": "mig-kaliningrad-visby",
+  "name": "Hostile MiG – Kaliningrad → Visby",
+  "description": "Non-cooperative hostile track – all ASTERIX categories (015/016/034/048/062).",
+  "transport": {
+    "host": "host.docker.internal",
+    "port": 8600,
+    "protocol": "udp"
+  },
+  "loop_count": 1,
+  "interval_ms": 5000,
+  "steps": [
+    {
+      "id": "mig-016",
+      "name": "INCS system configuration (Cat 016)",
+      "message": {
+        "category": 16,
+        "fields": {
+          "data_source": {
+            "sac": 1,
+            "sic": 2
+          },
+          "service_id": 1,
+          "message_type": 1,
+          "time_of_day": 36000.0,
+          "reporting_period_s": 60,
+          "pair": {
+            "pair_id": 1,
+            "transmitter_id": 10,
+            "receiver_id": 20
+          },
+          "reference_point": {
+            "latitude_deg": 59.35,
+            "longitude_deg": 18.05,
+            "height_m": 45.0
+          }
+        }
+      },
+      "delay_ms": 0,
+      "repeat": 1,
+      "motion": null
+    },
+    {
+      "id": "mig-034-nm",
+      "name": "North marker (Cat 034)",
+      "message": {
+        "category": 34,
+        "fields": {
+          "message_type": 1,
+          "data_source": {
+            "sac": 2,
+            "sic": 1
+          },
+          "azimuth": 0.0
+        }
+      },
+      "delay_ms": 200,
+      "repeat": 2,
+      "motion": null
+    },
+    {
+      "id": "mig-034-sector",
+      "name": "Sector crossing 339° (Cat 034)",
+      "message": {
+        "category": 34,
+        "fields": {
+          "message_type": 2,
+          "data_source": {
+            "sac": 2,
+            "sic": 1
+          },
+          "azimuth": 338.6941696479472
+        }
+      },
+      "delay_ms": 300,
+      "repeat": 1,
+      "motion": null
+    },
+    {
+      "id": "mig-062",
+      "name": "Hostile MiG system track (Cat 062)",
+      "message": {
+        "category": 62,
+        "fields": {
+          "data_source": {
+            "sac": 1,
+            "sic": 1
+          },
+          "service_id": 1,
+          "time_of_track": 36000.0,
+          "position_type": 2,
+          "wgs84": {
+            "latitude_deg": 54.71,
+            "longitude_deg": 20.5117
+          },
+          "velocity": {
+            "vx_mps": 0.0,
+            "vy_mps": 0.0
+          },
+          "mode3a": {
+            "code": 7770,
+            "validated": 1,
+            "garbled": 0,
+            "changed": 0
+          },
+          "track_number": 201,
+          "track_status": {
+            "monosensor": 0,
+            "spi": 0,
+            "mrh_geometric": 1,
+            "src": 1,
+            "tentative": 0
+          },
+          "flight_level": 410.0,
+          "geometric_altitude_ft": 41000.0,
+          "include_velocity": 1,
+          "include_geometric_altitude": 1
+        }
+      },
+      "delay_ms": 500,
+      "repeat": 1,
+      "motion": {
+        "enabled": true,
+        "mode": "direction",
+        "waypoints": [
+          {
+            "latitude_deg": 54.71,
+            "longitude_deg": 20.5117,
+            "x_m": null,
+            "y_m": null,
+            "rho_nm": null,
+            "theta_deg": null,
+            "range_m": null,
+            "azimuth": null,
+            "geometric_altitude_ft": null,
+            "flight_level": null
+          },
+          {
+            "latitude_deg": 57.6628,
+            "longitude_deg": 18.3462,
+            "x_m": null,
+            "y_m": null,
+            "rho_nm": null,
+            "theta_deg": null,
+            "range_m": null,
+            "azimuth": null,
+            "geometric_altitude_ft": null,
+            "flight_level": null
+          }
+        ],
+        "heading_deg": 338.6941696479472,
+        "step_distance": 6009.8687791215525,
+        "ticks": 60,
+        "tick_interval_ms": 2000,
+        "update_time": true,
+        "derive_velocity": true
+      }
+    },
+    {
+      "id": "mig-048",
+      "name": "Hostile MiG monoradar plot (Cat 048)",
+      "message": {
+        "category": 48,
+        "fields": {
+          "data_source": {
+            "sac": 2,
+            "sic": 1
+          },
+          "position": {
+            "rho_nm": 289.9158923725577,
+            "theta_deg": 162.855514088154
+          },
+          "mode3a": 7770
+        }
+      },
+      "delay_ms": 200,
+      "repeat": 1,
+      "motion": {
+        "enabled": true,
+        "mode": "direction",
+        "waypoints": [
+          {
+            "latitude_deg": null,
+            "longitude_deg": null,
+            "x_m": null,
+            "y_m": null,
+            "rho_nm": 289.9158923725577,
+            "theta_deg": 162.855514088154,
+            "range_m": null,
+            "azimuth": null,
+            "geometric_altitude_ft": null,
+            "flight_level": null
+          },
+          {
+            "latitude_deg": null,
+            "longitude_deg": null,
+            "x_m": null,
+            "y_m": null,
+            "rho_nm": 101.7251102657227,
+            "theta_deg": 174.63347085301348,
+            "range_m": null,
+            "azimuth": null,
+            "geometric_altitude_ft": null,
+            "flight_level": null
+          }
+        ],
+        "heading_deg": 174.63347085301348,
+        "step_distance": 3.1896742729972036,
+        "ticks": 60,
+        "tick_interval_ms": 2000,
+        "update_time": false,
+        "derive_velocity": false
+      }
+    },
+    {
+      "id": "mig-015",
+      "name": "Hostile MiG INCS plot (Cat 015)",
+      "message": {
+        "category": 15,
+        "fields": {
+          "data_source": {
+            "sac": 1,
+            "sic": 2
+          },
+          "message_type": 2,
+          "report_generation": 0,
+          "service_id": 1,
+          "time_of_applicability": 36000.0,
+          "track_plot_number": 201,
+          "measurement_id": {
+            "pair_id": 2,
+            "observation_number": 1
+          },
+          "position_type": 2,
+          "range_azimuth": {
+            "range_m": 536924.2326739769,
+            "azimuth_deg": 174.63347085301348
+          }
+        }
+      },
+      "delay_ms": 200,
+      "repeat": 1,
+      "motion": {
+        "enabled": true,
+        "mode": "direction",
+        "waypoints": [
+          {
+            "latitude_deg": null,
+            "longitude_deg": null,
+            "x_m": null,
+            "y_m": null,
+            "rho_nm": null,
+            "theta_deg": null,
+            "range_m": 536924.2326739769,
+            "azimuth": 174.63347085301348,
+            "geometric_altitude_ft": null,
+            "flight_level": null
+          },
+          {
+            "latitude_deg": null,
+            "longitude_deg": null,
+            "x_m": null,
+            "y_m": null,
+            "rho_nm": null,
+            "theta_deg": null,
+            "range_m": 188394.90421211845,
+            "azimuth": 174.63347085301348,
+            "geometric_altitude_ft": null,
+            "flight_level": null
+          }
+        ],
+        "heading_deg": 174.63347085301348,
+        "step_distance": 5907.2767535908215,
+        "ticks": 60,
+        "tick_interval_ms": 2000,
+        "update_time": true,
+        "derive_velocity": false
+      }
+    }
+  ],
+  "template_id": null,
+  "tags": []
+}

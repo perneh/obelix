@@ -32,6 +32,22 @@ def get_motion_defaults(message: AsterixMessage) -> StepMotion:
     )
 
 
+@router.post("/validate", response_model=Scenario)
+def validate_scenario(scenario: Scenario) -> Scenario:
+    """Validate scenario JSON (structure, categories, steps) without running it."""
+    if not scenario.steps:
+        raise HTTPException(status_code=400, detail="Scenario must contain at least one step")
+    for step in scenario.steps:
+        try:
+            get_category(step.message.category)
+        except KeyError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Step {step.id}: unsupported category {step.message.category}",
+            ) from exc
+    return scenario
+
+
 @router.post("/run", response_model=ScenarioRunState)
 async def run_scenario(scenario: Scenario) -> ScenarioRunState:
     if not scenario.steps:
