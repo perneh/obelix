@@ -1,5 +1,7 @@
 # Usage
 
+> **New to Obelix?** Follow the [guided course](course/README.md) — a step-by-step tour with screenshots of the web UI and Swagger API.
+
 ## Usage diagram
 
 ```mermaid

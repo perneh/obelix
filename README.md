@@ -18,6 +18,7 @@ Open [http://localhost:8000](http://localhost:8000) — API docs at [http://loca
 | [Architecture](docs/architecture.md) | Project structure, ASTERIX + Link 16 design, testing layers |
 | [Setup](docs/setup.md) | Docker and local installation |
 | [Usage](docs/usage.md) | Message editor, scenarios, templates, UDP testing |
+| [Guided course](docs/course/README.md) | Step-by-step walkthrough with Playwright screenshots (UI + API) |
 | [Wireshark installation](docs/wireshark-install.md) | Install Wireshark on macOS, Ubuntu, Red Hat, Windows |
 | [Wireshark & ASTERIX](docs/wireshark-asterix.md) | Capture and decode ASTERIX from Obelix |
 | [Wireshark & Link 16](docs/wireshark-link16.md) | Capture Link 16 JREAP from Obelix |
