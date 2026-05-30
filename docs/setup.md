@@ -5,7 +5,7 @@
 - Python 3.11+
 - pip or uv
 - Docker and Docker Compose v2 (optional, recommended)
-- Wireshark 3.x+ (optional, for ASTERIX packet inspection — see [Wireshark & ASTERIX](wireshark-asterix.md))
+- Wireshark 3.x+ (optional — see [Wireshark installation](wireshark-install.md), [ASTERIX](wireshark-asterix.md), [Link 16](wireshark-link16.md))
 
 ## With Docker (recommended)
 

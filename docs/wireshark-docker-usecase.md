@@ -2,7 +2,7 @@
 
 Step-by-step guide for capturing and decoding ASTERIX messages sent by Obelix running in Docker.
 
-**Prerequisites:** Wireshark installed ([installation guide](wireshark-asterix.md)), Obelix running via `./obelix start --dev`.
+**Prerequisites:** Wireshark installed ([installation guide](wireshark-install.md)), Obelix running via `./obelix start --dev`.
 
 ---
 
@@ -270,7 +270,7 @@ Example Cat 034 north marker: `220007C0010102`
 
 ### Capture permissions
 
-See [Wireshark install guide — Troubleshooting](wireshark-asterix.md#troubleshooting).
+See [Wireshark installation — troubleshooting](wireshark-install.md#general-troubleshooting).
 
 ### Debug inside the container
 
@@ -319,6 +319,8 @@ udp.port == 8600 && asterix
 
 ## Related docs
 
-- [Wireshark installation (macOS, Ubuntu, Red Hat, Windows)](wireshark-asterix.md)
+- [Wireshark installation](wireshark-install.md)
+- [Wireshark & ASTERIX](wireshark-asterix.md)
+- [Wireshark & Link 16](wireshark-link16.md)
 - [Obelix setup with Docker](setup.md)
 - [Obelix usage](usage.md)

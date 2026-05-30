@@ -1,156 +1,12 @@
 # Wireshark with ASTERIX
 
-Guide for installing Wireshark on macOS, Ubuntu, Red Hat, and Windows, and using it to inspect ASTERIX traffic from Obelix.
+Capture and decode **ASTERIX** traffic sent by Obelix.
 
-Modern Wireshark includes a **built-in ASTERIX dissector** — you do not need a separate plugin for Wireshark 3.x / 4.x. See the [Wireshark ASTERIX wiki](https://wiki.wireshark.org/ASTERIX) for details.
+**Prerequisites:** Wireshark 3.x+ installed — see [Wireshark installation](wireshark-install.md).
 
-> **Obelix default UDP port:** `8600` (configurable in the UI and via `OBELIX_UDP_PORT` in Docker).
+> **Obelix default UDP port:** `8600` (configurable in the UI and via Docker).
 
----
-
-## macOS
-
-### Option A — Homebrew (recommended for developers)
-
-```bash
-# Install Wireshark GUI
-brew install --cask wireshark
-
-# Optional: command-line tools (tshark, capinfos, …)
-brew install wireshark
-```
-
-### Option B — Official installer
-
-1. Download the latest `.dmg` from [https://www.wireshark.org/download.html](https://www.wireshark.org/download.html)
-2. Open the disk image and drag **Wireshark** to Applications
-3. Run **Install ChmodBPF** from the disk image (or from `/Applications/Wireshark.app`) so non-root users can capture packets
-4. Log out and back in if prompted
-
-### Capture permissions
-
-If capture fails with a permission error:
-
-```bash
-# After running Install ChmodBPF once:
-ls -l /dev/bpf*
-# Your user should be in group access; otherwise run Wireshark with admin approval when macOS asks.
-```
-
-### Verify ASTERIX support
-
-```bash
-wireshark -v
-tshark -G protocols | grep -i asterix
-```
-
-You should see `asterix` and `asterix-tcp` in the output.
-
----
-
-## Ubuntu (and Debian-based Linux)
-
-### Install
-
-```bash
-sudo apt update
-sudo apt install wireshark wireshark-common tshark
-```
-
-During installation, select **Yes** when asked whether non-superusers should be allowed to capture packets. If you missed that step:
-
-```bash
-sudo dpkg-reconfigure wireshark-common
-sudo usermod -aG wireshark "$USER"
-# Log out and back in for group membership to apply
-```
-
-### Verify
-
-```bash
-wireshark -v
-tshark -G protocols | grep -i asterix
-```
-
-### Optional — desktop launcher only
-
-```bash
-sudo apt install wireshark-qt   # if wireshark meta-package did not pull the GUI
-```
-
----
-
-## Red Hat Enterprise Linux / Fedora / Rocky / AlmaLinux
-
-### Fedora / RHEL 8+ / Rocky / Alma
-
-```bash
-sudo dnf install wireshark wireshark-cli
-```
-
-GUI (if not included):
-
-```bash
-sudo dnf install wireshark-gnome   # Fedora
-# or on some RHEL derivatives:
-sudo dnf install wireshark-qt
-```
-
-### RHEL 7 (legacy)
-
-```bash
-sudo yum install wireshark wireshark-cli
-```
-
-### Capture permissions
-
-```bash
-sudo usermod -aG wireshark "$USER"
-# Log out and back in
-```
-
-If the `wireshark` group does not exist, create it and adjust dumpcap:
-
-```bash
-sudo groupadd wireshark
-sudo usermod -aG wireshark "$USER"
-sudo chmod 750 /usr/bin/dumpcap
-sudo chgrp wireshark /usr/bin/dumpcap
-sudo setcap cap_net_raw,cap_net_admin=eip /usr/bin/dumpcap
-```
-
-### Verify
-
-```bash
-wireshark -v
-tshark -G protocols | grep -i asterix
-```
-
----
-
-## Windows
-
-### Install
-
-1. Download the installer from [https://www.wireshark.org/download.html](https://www.wireshark.org/download.html)
-2. Run the `.exe` as Administrator
-3. When prompted, install **Npcap** (recommended) or WinPcap for packet capture
-4. Complete the setup wizard with default options unless you have specific needs
-
-### Verify
-
-Open **Wireshark → Help → About Wireshark** and confirm version ≥ 3.0.
-
-Command prompt:
-
-```cmd
-"C:\Program Files\Wireshark\tshark.exe" -G protocols | findstr /i asterix
-```
-
-### Notes
-
-- Run Wireshark as a normal user; approve the Npcap driver if Windows asks
-- External ASTERIX plugins (e.g. legacy Croatia Control builds) are **obsolete** for Wireshark ≥ 1.10 — use the built-in dissector instead
+Modern Wireshark includes a **built-in ASTERIX dissector** — no separate plugin is needed for Wireshark 3.x / 4.x. See the [Wireshark ASTERIX wiki](https://wiki.wireshark.org/ASTERIX).
 
 ---
 
@@ -164,17 +20,30 @@ The dissector cannot guess category **editions**. Set versions to match what Obe
 
 | Category | Obelix edition | Wireshark preference (approx.) |
 |----------|----------------|--------------------------------|
+| 015 | 1.1 | Cat 015 → matching edition |
+| 016 | 1.0 | Cat 016 → matching edition |
+| 021 | 2.7 | Cat 021 → matching edition |
 | 034 | 1.29 | Cat 034 → matching edition |
 | 048 | 1.32 | Cat 048 → matching edition |
 | 062 | 1.21 | Cat 062 → matching edition |
+| 065 | 1.5 | Cat 065 → matching edition |
+| 240 | 1.3 | Cat 240 → matching edition |
 
 4. Click **OK**
 
 If fields decode incorrectly, try the closest available edition in the dropdown. See [Wireshark ASTERIX preferences](https://wiki.wireshark.org/ASTERIX#preference-settings).
 
+### Verify ASTERIX dissector
+
+```bash
+tshark -G protocols | grep -i asterix
+```
+
+You should see `asterix` and `asterix-tcp` in the output.
+
 ---
 
-## Capture Obelix traffic
+## Capture Obelix ASTERIX traffic
 
 ### Docker (recommended for Obelix users)
 
@@ -182,7 +51,7 @@ See **[Wireshark + Docker use case](wireshark-docker-usecase.md)** for a full wa
 
 ### Local setup (without Docker)
 
-#### 1. Start Obelix and a receiver (optional)
+#### 1. Start Obelix
 
 ```bash
 ./obelix start --dev
@@ -197,9 +66,9 @@ See **[Wireshark + Docker use case](wireshark-docker-usecase.md)** for a full wa
 
 Or capture on your Ethernet/Wi‑Fi interface if traffic goes to another host.
 
-#### 3. Send a message from Obelix
+#### 3. Send from Obelix
 
-In the Obelix UI: configure host `127.0.0.1`, port `8600`, click **Send via UDP**.
+In the **Message Editor** tab: configure host `127.0.0.1`, port `8600`, click **Send via UDP**.
 
 #### 4. Inspect packets
 
@@ -214,7 +83,9 @@ ASTERIX packet, Category 062
     …
 ```
 
-### Useful display filters
+---
+
+## Display filters
 
 | Filter | Purpose |
 |--------|---------|
@@ -226,17 +97,27 @@ ASTERIX packet, Category 062
 
 Examples from the [Wireshark wiki](https://wiki.wireshark.org/ASTERIX#display-filter): `asterix.SAC == 1`, `asterix.category == 62 && asterix.AI == "CALLSIGN"`.
 
-### Command-line capture (all platforms)
+---
+
+## Command-line capture
 
 ```bash
 # Capture 10 packets to file
-tshark -i lo -f "udp port 8600" -c 10 -w obelix.pcapng
+tshark -i lo -f "udp port 8600" -c 10 -w obelix-asterix.pcapng
 
 # Read and decode ASTERIX
-tshark -r obelix.pcapng -Y asterix
+tshark -r obelix-asterix.pcapng -Y asterix
 ```
 
 Replace `-i lo` with the correct interface (`tshark -D` lists interfaces).
+
+---
+
+## Compare Obelix hex with Wireshark
+
+1. In Obelix, click **Generate Hex** and copy the hex string
+2. In Wireshark, select the UDP packet → **Packet Bytes** pane
+3. Compare bytes — they should match (Obelix sends raw ASTERIX datablocks, no extra header)
 
 ---
 
@@ -244,18 +125,18 @@ Replace `-i lo` with the correct interface (`tshark -D` lists interfaces).
 
 | Problem | Suggested fix |
 |---------|----------------|
-| No ASTERIX decode, only “UDP payload” | Wireshark too old — upgrade to 3.x+; check **Protocols → ASTERIX** is enabled |
+| No ASTERIX decode, only “UDP payload” | Upgrade to Wireshark 3.x+; enable **Protocols → ASTERIX** |
 | Wrong field values | Set correct category **edition** in ASTERIX preferences |
 | No packets on loopback | Use loopback interface; confirm Obelix sends to `127.0.0.1:8600` |
-| Permission denied (Linux) | Add user to `wireshark` group; re-login |
-| Permission denied (macOS) | Run **Install ChmodBPF** from Wireshark bundle |
-| No capture (Windows) | Reinstall **Npcap**; run Wireshark installer as Admin |
+| Docker: no packets | See [Wireshark + Docker](wireshark-docker-usecase.md); avoid `127.0.0.1` from container |
+| Capture permission errors | See [Wireshark installation — troubleshooting](wireshark-install.md#general-troubleshooting) |
 
 ---
 
 ## References
 
-- [Wireshark downloads](https://www.wireshark.org/download.html)
+- [Wireshark installation](wireshark-install.md)
 - [Wireshark ASTERIX wiki](https://wiki.wireshark.org/ASTERIX)
 - [Eurocontrol ASTERIX publications](https://www.eurocontrol.int/asterix)
-- [Obelix usage guide](usage.md) — sending messages and UDP testing
+- [Obelix usage guide](usage.md)
+- Per-category notes: [docs/categories/](categories/README.md)

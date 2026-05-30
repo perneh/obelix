@@ -29,9 +29,113 @@ body {
 }
 
 header {
-  padding: 1.5rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  padding: 1rem 2rem;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
+  overflow: visible;
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.brand h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.top-nav {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown-toggle {
+  display: block;
+  font-family: inherit;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  min-width: 12rem;
+  text-align: left;
+  user-select: none;
+}
+
+.nav-dropdown-toggle::after {
+  content: "▾";
+  float: right;
+  color: var(--muted);
+  margin-left: 0.5rem;
+}
+
+.nav-dropdown.active .nav-dropdown-toggle,
+.nav-dropdown.is-open .nav-dropdown-toggle {
+  border-color: var(--accent);
+}
+
+.nav-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  min-width: 100%;
+  width: max-content;
+  max-width: 18rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  z-index: 300;
+  padding: 0.35rem;
+}
+
+.nav-dropdown-menu[hidden] {
+  display: none !important;
+}
+
+.nav-dropdown.is-open .nav-dropdown-menu {
+  display: block;
+}
+
+.nav-dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  padding: 0.55rem 0.75rem;
+  border-radius: calc(var(--radius) - 2px);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.nav-dropdown-item:hover {
+  background: var(--surface2);
+}
+
+.nav-dropdown-item.active {
+  background: var(--accent);
+  color: white;
 }
 
 header h1 {
@@ -49,34 +153,6 @@ main {
   max-width: 1200px;
   margin: 0 auto;
   padding: 1.5rem 2rem 3rem;
-}
-
-.tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.tab {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--muted);
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius);
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.15s;
-}
-
-.tab:hover {
-  color: var(--text);
-  border-color: var(--accent);
-}
-
-.tab.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: white;
 }
 
 .panel {

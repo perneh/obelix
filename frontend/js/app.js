@@ -26,6 +26,7 @@ import {
   scenarioToJsonString,
   validateScenarioJson,
 } from "./scenario-io.js";
+import { navigateTo, onNavigate } from "./navigation.js";
 
 const API = "/api";
 
@@ -60,20 +61,19 @@ async function api(path, options = {}) {
   return res.json();
 }
 
-// --- Tabs ---
+// --- Navigation ---
 
-document.querySelectorAll(".tab").forEach((tab) => {
-  tab.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
-    document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
-    tab.classList.add("active");
-    document.getElementById(`tab-${tab.dataset.tab}`).classList.add("active");
-    if (tab.dataset.tab === "library") loadLibrary();
-    if (tab.dataset.tab === "scenario") {
-      updateScenarioUI();
-      loadTemplateCatalog();
-    }
-  });
+onNavigate(({ protocol, subtab }) => {
+  if (protocol !== "asterix") return;
+  if (subtab === "library") loadLibrary();
+  if (subtab === "scenario") {
+    updateScenarioUI();
+    loadTemplateCatalog();
+  }
+});
+
+document.getElementById("btn-goto-message")?.addEventListener("click", () => {
+  navigateTo("asterix", "message");
 });
 
 // --- Categories ---
@@ -161,7 +161,7 @@ async function toggleCategoryHelp() {
   }
 }
 
-document.getElementById("btn-category-help").addEventListener("click", toggleCategoryHelp);
+document.getElementById("btn-category-help")?.addEventListener("click", toggleCategoryHelp);
 
 function buildDefaults(fields) {
   const values = {};
@@ -424,7 +424,7 @@ function getCurrentMessage() {
 
 // --- Encode & Send ---
 
-document.getElementById("btn-encode").addEventListener("click", async () => {
+document.getElementById("btn-encode")?.addEventListener("click", async () => {
   try {
     const result = await api("/encode", {
       method: "POST",
@@ -437,7 +437,7 @@ document.getElementById("btn-encode").addEventListener("click", async () => {
   }
 });
 
-document.getElementById("btn-send").addEventListener("click", async () => {
+document.getElementById("btn-send")?.addEventListener("click", async () => {
   const statusEl = document.getElementById("send-status");
   statusEl.textContent = "Sending…";
   statusEl.className = "status";
@@ -502,7 +502,7 @@ async function saveConfiguration(scope) {
   }
 }
 
-document.getElementById("btn-save-local").addEventListener("click", () => saveConfiguration("local"));
+document.getElementById("btn-save-local")?.addEventListener("click", () => saveConfiguration("local"));
 
 function renderConfigurationList(configurations) {
   const filter = document.getElementById("config-category-filter").value;
@@ -629,7 +629,7 @@ async function loadConfiguration(configId) {
   await selectCategory(config.message.category);
   state.fieldValues = config.message.fields;
   renderForm();
-  document.querySelector('[data-tab="message"]').click();
+  navigateTo("asterix", "message");
 }
 
 async function deleteConfiguration(configId) {
@@ -688,7 +688,7 @@ function updateScenarioUI() {
 async function addStepFromCurrentMessage() {
   if (!state.selectedCategory) {
     alert("Select a category in Message Editor first, then configure the message fields.");
-    document.querySelector('[data-tab="message"]')?.click();
+    navigateTo("asterix", "message");
     return false;
   }
   const message = getCurrentMessage();
@@ -718,14 +718,10 @@ async function addStepFromCurrentMessage() {
   return true;
 }
 
-document.getElementById("btn-goto-message")?.addEventListener("click", () => {
-  document.querySelector('[data-tab="message"]')?.click();
-});
-
 document.getElementById("btn-add-to-scenario")?.addEventListener("click", async () => {
   const added = await addStepFromCurrentMessage();
   if (added) {
-    document.querySelector('[data-tab="scenario"]')?.click();
+    navigateTo("asterix", "scenario");
   }
 });
 
@@ -822,6 +818,7 @@ function renderMotionSection(step, index) {
 
 function renderScenarioSteps() {
   const container = document.getElementById("scenario-steps");
+  if (!container) return;
   if (state.scenarioSteps.length === 0) {
     container.innerHTML = `
       <div class="steps-empty">
@@ -834,7 +831,7 @@ function renderScenarioSteps() {
         </ol>
       </div>`;
     container.querySelector("[data-goto-message]")?.addEventListener("click", () => {
-      document.querySelector('[data-tab="message"]')?.click();
+      navigateTo("asterix", "message");
     });
     updateScenarioUI();
     return;
@@ -965,7 +962,7 @@ function renderScenarioSteps() {
 async function updateStepFromEditor(index) {
   if (!state.selectedCategory) {
     alert("Open Message Editor and select a category first.");
-    document.querySelector('[data-tab="message"]')?.click();
+    navigateTo("asterix", "message");
     return;
   }
   const step = state.scenarioSteps[index];
@@ -1005,7 +1002,7 @@ async function updateStepFromEditor(index) {
   renderScenarioSteps();
 }
 
-document.getElementById("btn-add-step").addEventListener("click", () => addStepFromCurrentMessage());
+document.getElementById("btn-add-step")?.addEventListener("click", () => addStepFromCurrentMessage());
 
 function buildScenarioPayload(overrides = {}) {
   const name = document.getElementById("scenario-name").value || "Unnamed scenario";
@@ -1027,7 +1024,7 @@ function buildScenarioPayload(overrides = {}) {
   };
 }
 
-document.getElementById("btn-start-scenario").addEventListener("click", async () => {
+document.getElementById("btn-start-scenario")?.addEventListener("click", async () => {
   if (state.scenarioSteps.length === 0) {
     alert("Add at least one step before starting.\n\n1. Open Message Editor\n2. Configure a message\n3. Click \"+ Add Step from Current Message\"");
     return;
@@ -1049,13 +1046,13 @@ document.getElementById("btn-start-scenario").addEventListener("click", async ()
   }
 });
 
-document.getElementById("btn-pause-scenario").addEventListener("click", () =>
+document.getElementById("btn-pause-scenario")?.addEventListener("click", () =>
   controlScenario("pause")
 );
-document.getElementById("btn-resume-scenario").addEventListener("click", () =>
+document.getElementById("btn-resume-scenario")?.addEventListener("click", () =>
   controlScenario("resume")
 );
-document.getElementById("btn-stop-scenario").addEventListener("click", () =>
+document.getElementById("btn-stop-scenario")?.addEventListener("click", () =>
   controlScenario("stop")
 );
 
@@ -1116,7 +1113,7 @@ async function pollScenarioStatus() {
   }
 }
 
-document.getElementById("btn-save-scenario").addEventListener("click", async () => {
+document.getElementById("btn-save-scenario")?.addEventListener("click", async () => {
   try {
     const scenario = await saveScenario("local");
     syncJsonEditorFromScenario();
@@ -1132,7 +1129,7 @@ document.getElementById("btn-save-scenario").addEventListener("click", async () 
 async function loadSavedScenario(id) {
   const scenario = await api(`/saved-scenarios/${id}`);
   applyScenarioFromPayload(scenario);
-  document.querySelector('[data-tab="scenario"]').click();
+  navigateTo("asterix", "scenario");
 }
 
 function applyScenarioFromPayload(scenario) {
@@ -1219,7 +1216,7 @@ async function importScenarioFromJsonText(text, sourceLabel = "JSON") {
     applyScenarioFromPayload(scenario);
     syncJsonEditorFromScenario();
     setJsonStatus(`Imported "${scenario.name}" (${scenario.steps.length} steps).`);
-    document.querySelector('[data-tab="scenario"]')?.click();
+    navigateTo("asterix", "scenario");
     return scenario;
   } catch (err) {
     setJsonStatus(`Import failed: ${err.message}`, true);

@@ -98,6 +98,19 @@ Request body shape:
 
 Use `POST /api/send` when you need one endpoint for all categories (category is inside `message`).
 
+## Link 16 (J-messages)
+
+Open the **Link 16** tab to edit and send J-series messages the same way as ASTERIX categories. Default JREAP port is **8700**.
+
+| Family | Examples |
+|--------|----------|
+| J2 | PPLI, Air PPLI |
+| J3 | Air Track (J3.2), Surface Track |
+| J7 | Track Management, IFF/SIF |
+| J12 | Mission Assignment, Kinematic |
+
+Set **Source JU** to simulate different C2 participants sending to the same gateway. API: `GET /api/link16/messages`, `POST /api/link16/encode`, `POST /api/link16/send/J3-2`. See [docs/link16/README.md](../link16/README.md).
+
 ## Scenario builder
 
 1. Configure messages in the Message Editor tab.
@@ -186,9 +199,16 @@ API download: `GET /api/saved-scenarios/{id}/file` returns the same JSON as on d
 
 When running with `./obelix start --tools`, a UDP listener is started automatically on port 8600.
 
-For decoding ASTERIX in Wireshark (install, capture filters, edition settings), see [Wireshark & ASTERIX](wireshark-asterix.md).
+The UI is organised by **protocol** (ASTERIX or Link 16), then by **Message Editor**, **Scenario Builder**, and **Configurations & Scenarios**.
 
-**Docker use case:** step-by-step capture of container traffic → [Wireshark + Docker use case](wireshark-docker-usecase.md).
+For decoding traffic in Wireshark:
+
+| Protocol | Guide |
+|----------|--------|
+| Installation (all platforms) | [Wireshark installation](wireshark-install.md) |
+| ASTERIX (port 8600) | [Wireshark & ASTERIX](wireshark-asterix.md) |
+| Link 16 (port 8700) | [Wireshark & Link 16](wireshark-link16.md) |
+| Docker + ASTERIX | [Wireshark + Docker use case](wireshark-docker-usecase.md) |
 
 To listen manually without Docker:
 

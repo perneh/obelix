@@ -152,6 +152,9 @@ activemq-data/
 .envrc
 # Local runtime data (not version-controlled)
 data/configurations/
+data/link16_configurations/
+data/link16_scenarios/*
+!data/link16_scenarios/.gitkeep
 data/templates/
 data/scenarios/*
 !data/scenarios/.gitkeep

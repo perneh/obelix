@@ -3,27 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Obelix – ASTERIX Message Tool</title>
+  <title>Obelix – ASTERIX &amp; Link 16 Tool</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
   <header>
-    <h1>Obelix</h1>
-    <p class="subtitle">Create, edit and send ASTERIX messages</p>
+    <div class="header-inner">
+      <div class="brand">
+        <h1>Obelix</h1>
+        <p class="subtitle">Create, edit and send ASTERIX and Link 16 messages</p>
+      </div>
+      <nav class="top-nav" aria-label="Main navigation">
+        <div class="nav-dropdown" data-protocol="asterix">
+          <button type="button" class="nav-dropdown-toggle" aria-expanded="false" aria-haspopup="true">
+            ASTERIX
+          </button>
+          <div class="nav-dropdown-menu" role="menu" hidden>
+            <button type="button" class="nav-dropdown-item active" data-protocol="asterix" data-subtab="message" role="menuitem">Message Editor</button>
+            <button type="button" class="nav-dropdown-item" data-protocol="asterix" data-subtab="scenario" role="menuitem">Scenario Builder</button>
+            <button type="button" class="nav-dropdown-item" data-protocol="asterix" data-subtab="library" role="menuitem">Configurations &amp; Scenarios</button>
+          </div>
+        </div>
+        <div class="nav-dropdown" data-protocol="link16">
+          <button type="button" class="nav-dropdown-toggle" aria-expanded="false" aria-haspopup="true">
+            Link 16
+          </button>
+          <div class="nav-dropdown-menu" role="menu" hidden>
+            <button type="button" class="nav-dropdown-item" data-protocol="link16" data-subtab="message" role="menuitem">Message Editor</button>
+            <button type="button" class="nav-dropdown-item" data-protocol="link16" data-subtab="scenario" role="menuitem">Scenario Builder</button>
+            <button type="button" class="nav-dropdown-item" data-protocol="link16" data-subtab="library" role="menuitem">Configurations &amp; Scenarios</button>
+          </div>
+        </div>
+      </nav>
+    </div>
   </header>
 
   <main>
-    <nav class="tabs">
-      <button class="tab active" data-tab="message">Message Editor</button>
-      <button class="tab" data-tab="scenario">Scenario Builder</button>
-      <button class="tab" data-tab="library">Configurations &amp; Scenarios</button>
-    </nav>
-
-    <!-- Message Editor -->
-    <section id="tab-message" class="panel active">
+    <!-- ASTERIX Message Editor -->
+    <section id="tab-asterix-message" class="panel active" data-protocol="asterix">
       <div class="grid">
         <aside class="sidebar">
-          <h2>Categories</h2>
+          <h2>ASTERIX categories</h2>
           <ul id="category-list" class="category-list"></ul>
         </aside>
 
@@ -78,19 +98,19 @@
       </div>
     </section>
 
-    <!-- Scenario Builder -->
-    <section id="tab-scenario" class="panel">
+    <!-- ASTERIX Scenario Builder -->
+    <section id="tab-asterix-scenario" class="panel" data-protocol="asterix">
       <div class="card scenario-intro">
-        <h2>Scenario Builder</h2>
-        <p class="lead">A scenario sends one or more ASTERIX messages in sequence — for example a moving aircraft track or a series of radar plots.</p>
+        <h2>ASTERIX · Scenario Builder</h2>
+        <p class="lead">Send one or more ASTERIX messages in sequence — for example a moving aircraft track or a series of radar plots.</p>
 
         <ol class="workflow-steps" id="scenario-workflow">
           <li class="workflow-step" data-wf="create">
             <span class="wf-num">1</span>
             <div class="wf-body">
               <strong>Create a message</strong>
-              <p>In <em>Message Editor</em>, select a category (e.g. Cat 62) and configure the fields.</p>
-              <button type="button" id="btn-goto-message" class="btn secondary btn-sm">Open Message Editor</button>
+              <p>In <em>ASTERIX → Message Editor</em>, select a category (e.g. Cat 62) and configure the fields.</p>
+              <button type="button" id="btn-goto-message" class="btn secondary btn-sm">Open ASTERIX Message Editor</button>
             </div>
           </li>
           <li class="workflow-step" data-wf="add">
@@ -171,7 +191,7 @@
         <div id="scenario-steps"></div>
         <div class="step-actions">
           <button type="button" id="btn-add-step" class="btn secondary">+ Add Step from Current Message</button>
-          <span class="field-hint">Uses the message currently open in Message Editor. Switch tab first if needed.</span>
+          <span class="field-hint">Uses the message currently open in ASTERIX Message Editor.</span>
         </div>
       </div>
 
@@ -256,11 +276,131 @@
       </div>
     </section>
 
-    <!-- Library -->
-    <section id="tab-library" class="panel">
+    <!-- Link 16 Message Editor -->
+    <section id="tab-link16-message" class="panel" data-protocol="link16">
+      <div class="grid">
+        <aside class="sidebar">
+          <h2>J-messages</h2>
+          <div id="link16-family-filter" class="form-row"></div>
+          <ul id="link16-message-list" class="category-list"></ul>
+        </aside>
+
+        <div class="editor">
+          <div class="card">
+            <div class="category-header">
+              <div>
+                <h2 id="link16-title">Select a J-message</h2>
+                <p id="link16-description" class="muted"></p>
+              </div>
+              <button type="button" id="btn-link16-help" class="btn secondary btn-sm" hidden>
+                Message help
+              </button>
+            </div>
+            <div id="link16-help-panel" class="help-panel hidden" aria-live="polite"></div>
+            <form id="link16-form"></form>
+          </div>
+
+          <div class="card">
+            <h3>Encoded Output (JREAP)</h3>
+            <pre id="link16-hex-output" class="hex-output">—</pre>
+            <div class="actions">
+              <button type="button" id="btn-link16-encode" class="btn secondary">Generate Hex</button>
+              <button type="button" id="btn-link16-send" class="btn primary">Send via UDP</button>
+              <button type="button" id="btn-link16-add-step" class="btn secondary">Add to Scenario →</button>
+              <button type="button" id="btn-link16-save-local" class="btn secondary">Save locally</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Transport</h3>
+            <div class="form-row">
+              <label>Host
+                <input type="text" id="link16-send-host" value="host.docker.internal">
+              </label>
+              <label>Port <input type="number" id="link16-send-port" value="8700" min="1" max="65535"></label>
+              <label>Protocol
+                <select id="link16-send-protocol">
+                  <option value="udp" selected>UDP</option>
+                  <option value="tcp">TCP</option>
+                </select>
+              </label>
+            </div>
+            <p class="muted transport-hint">
+              Link 16 JREAP default port <code>8700</code>. Set <strong>Source JU</strong> to simulate different C2 nodes.
+            </p>
+            <p id="link16-send-status" class="status"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Link 16 Scenario Builder -->
+    <section id="tab-link16-scenario" class="panel" data-protocol="link16">
+      <div class="card scenario-intro">
+        <h2>Link 16 · Scenario Builder</h2>
+        <p class="lead">Send J-series messages in sequence — simulate multiple C2 nodes with different Source JU values per step.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-section-header">
+          <div>
+            <h3>Steps</h3>
+            <p class="muted section-desc">J-messages sent in order. Add steps from the Link 16 Message Editor.</p>
+          </div>
+          <span class="step-count-badge" id="link16-step-count">0 steps</span>
+        </div>
+        <div id="link16-scenario-steps"></div>
+        <div class="step-actions">
+          <button type="button" id="btn-link16-add-step-panel" class="btn secondary">+ Add Step from Current Message</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Scenario settings</h3>
+        <div class="form-row">
+          <label>Name
+            <input type="text" id="link16-scenario-name" placeholder="e.g. Baltic J3.2 tracks">
+          </label>
+          <label>Loop count
+            <input type="number" id="link16-scenario-loops" value="1" min="0">
+          </label>
+          <label>Pause between loops (ms)
+            <input type="number" id="link16-scenario-interval" value="1000" min="0">
+          </label>
+        </div>
+        <fieldset class="transport-fieldset">
+          <legend>Transport</legend>
+          <div class="form-row">
+            <label>Host <input type="text" id="link16-scenario-host" value="host.docker.internal"></label>
+            <label>Port <input type="number" id="link16-scenario-port" value="8700" min="1" max="65535"></label>
+            <label>Protocol
+              <select id="link16-scenario-protocol">
+                <option value="udp" selected>UDP</option>
+                <option value="tcp">TCP</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="card scenario-run-card">
+        <h3>Run scenario</h3>
+        <div class="actions run-actions">
+          <button type="button" id="btn-link16-start-scenario" class="btn primary btn-lg" disabled>▶ Start Scenario</button>
+          <button type="button" id="btn-link16-pause-scenario" class="btn secondary" disabled>Pause</button>
+          <button type="button" id="btn-link16-resume-scenario" class="btn secondary" disabled>Resume</button>
+          <button type="button" id="btn-link16-stop-scenario" class="btn secondary" disabled>Stop</button>
+          <button type="button" id="btn-link16-save-scenario" class="btn secondary">Save locally</button>
+        </div>
+        <pre id="link16-scenario-status" class="status-block">Ready — add steps, then click Start Scenario.</pre>
+      </div>
+    </section>
+
+    <!-- ASTERIX Library -->
+    <section id="tab-asterix-library" class="panel" data-protocol="asterix">
       <div class="grid two-col">
         <div class="card">
-          <h2>Message configurations</h2>
+          <h2>ASTERIX · Message configurations</h2>
           <p class="muted">Shared presets live in <code>configurations/</code> (git). Local saves go to <code>data/configurations/</code>.</p>
           <div class="form-row">
             <label>Filter category
@@ -272,7 +412,7 @@
           <ul id="configuration-list" class="item-list"></ul>
         </div>
         <div class="card">
-          <h2>Saved Scenarios</h2>
+          <h2>ASTERIX · Saved scenarios</h2>
           <p class="muted">Repository scenarios: <code>scenarios/shared/*.json</code>. Local: <code>data/scenarios/*.json</code>. Edit files externally or use export/import below.</p>
           <div class="actions library-scenario-actions">
             <button type="button" id="btn-library-import-scenario" class="btn secondary btn-sm">Import .json file</button>
@@ -282,8 +422,33 @@
         </div>
       </div>
     </section>
+
+    <!-- Link 16 Library -->
+    <section id="tab-link16-library" class="panel" data-protocol="link16">
+      <div class="grid two-col">
+        <div class="card">
+          <h2>Link 16 · Message configurations</h2>
+          <p class="muted">Local saves in <code>data/link16_configurations/</code>.</p>
+          <div class="form-row">
+            <label>Filter J-series
+              <select id="link16-config-series-filter">
+                <option value="">All J-messages</option>
+              </select>
+            </label>
+          </div>
+          <ul id="link16-configuration-list" class="item-list"></ul>
+        </div>
+        <div class="card">
+          <h2>Link 16 · Saved scenarios</h2>
+          <p class="muted">Local scenarios in <code>data/link16_scenarios/</code>.</p>
+          <ul id="link16-saved-scenario-list" class="item-list"></ul>
+        </div>
+      </div>
+    </section>
   </main>
 
+  <script type="module" src="/js/navigation.js"></script>
   <script type="module" src="/js/app.js"></script>
+  <script type="module" src="/js/link16.js"></script>
 </body>
 </html>
