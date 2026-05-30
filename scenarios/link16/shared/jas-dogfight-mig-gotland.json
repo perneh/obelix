@@ -1,0 +1,291 @@
+{
+  "id": "jas-dogfight-mig-gotland",
+  "name": "2× JAS 39 vs 4× MiG-29 – dogfight over Gotland",
+  "description": "Baltic air defence exercise: two Swedish Gripens engage four hostile MiG-29 tracks approaching from the east over Gotland. STRIC coordinates WEAPONS FREE; tracks update through merge, crank, and disengage.",
+  "transport": {
+    "host": "host.docker.internal",
+    "port": 8700,
+    "protocol": "udp"
+  },
+  "loop_count": 1,
+  "interval_ms": 2500,
+  "steps": [
+    {
+      "id": "c2-picture-hostiles",
+      "name": "STRIC declares hostile group (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 5,
+          "track_number": 201,
+          "text": "HOSTILE GROUP EAST: four fast movers bearing 090, merge expected 57.50N 18.50E. JAS section scramble."
+        }
+      },
+      "delay_ms": 0,
+      "repeat": 1
+    },
+    {
+      "id": "engagement-weapons-free",
+      "name": "Engagement coordination WEAPONS FREE (J10.0)",
+      "message": {
+        "j_series": "J10.0",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 7,
+          "track_number": 201,
+          "engagement_status": 2
+        }
+      },
+      "delay_ms": 500,
+      "repeat": 1
+    },
+    {
+      "id": "jas1-ppli",
+      "name": "JAS #1 PPLI west Gotland (J2.3)",
+      "message": {
+        "j_series": "J2.3",
+        "fields": {
+          "source_ju": 11001,
+          "npg": 1,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 7341,
+          "position": { "latitude_deg": 57.620, "longitude_deg": 18.100 },
+          "altitude_ft": 25000,
+          "course_deg": 90,
+          "speed_kts": 420
+        }
+      },
+      "delay_ms": 800,
+      "repeat": 1
+    },
+    {
+      "id": "jas2-ppli",
+      "name": "JAS #2 PPLI west Gotland (J2.3)",
+      "message": {
+        "j_series": "J2.3",
+        "fields": {
+          "source_ju": 11002,
+          "npg": 1,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 7342,
+          "position": { "latitude_deg": 57.580, "longitude_deg": 18.080 },
+          "altitude_ft": 25000,
+          "course_deg": 90,
+          "speed_kts": 420
+        }
+      },
+      "delay_ms": 400,
+      "repeat": 1
+    },
+    {
+      "id": "mig1-hostile",
+      "name": "MiG #1 hostile track (J3.2)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 2,
+          "track_number": 201,
+          "identity": 6,
+          "platform": 1,
+          "mode3a": 7770,
+          "position": { "latitude_deg": 57.520, "longitude_deg": 19.200 },
+          "altitude_ft": 28000,
+          "course_deg": 270,
+          "speed_kts": 480
+        }
+      },
+      "delay_ms": 1500,
+      "repeat": 1
+    },
+    {
+      "id": "mig2-hostile",
+      "name": "MiG #2 hostile track (J3.2)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 2,
+          "track_number": 202,
+          "identity": 6,
+          "platform": 1,
+          "mode3a": 7771,
+          "position": { "latitude_deg": 57.500, "longitude_deg": 19.250 },
+          "altitude_ft": 28000,
+          "course_deg": 270,
+          "speed_kts": 485
+        }
+      },
+      "delay_ms": 300,
+      "repeat": 1
+    },
+    {
+      "id": "mig3-hostile",
+      "name": "MiG #3 hostile track (J3.2)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 2,
+          "track_number": 203,
+          "identity": 6,
+          "platform": 1,
+          "mode3a": 7772,
+          "position": { "latitude_deg": 57.480, "longitude_deg": 19.180 },
+          "altitude_ft": 26000,
+          "course_deg": 265,
+          "speed_kts": 470
+        }
+      },
+      "delay_ms": 300,
+      "repeat": 1
+    },
+    {
+      "id": "mig4-hostile",
+      "name": "MiG #4 hostile track (J3.2)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 2,
+          "track_number": 204,
+          "identity": 6,
+          "platform": 1,
+          "mode3a": 7773,
+          "position": { "latitude_deg": 57.460, "longitude_deg": 19.220 },
+          "altitude_ft": 26000,
+          "course_deg": 268,
+          "speed_kts": 475
+        }
+      },
+      "delay_ms": 300,
+      "repeat": 1
+    },
+    {
+      "id": "merge-jas1",
+      "name": "JAS #1 merge geometry (J3.2)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 2,
+          "track_number": 101,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 7341,
+          "position": { "latitude_deg": 57.510, "longitude_deg": 18.450 },
+          "altitude_ft": 24000,
+          "course_deg": 45,
+          "speed_kts": 450
+        }
+      },
+      "delay_ms": 2000,
+      "repeat": 1
+    },
+    {
+      "id": "merge-jas2",
+      "name": "JAS #2 merge geometry (J3.2)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 2,
+          "track_number": 102,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 7342,
+          "position": { "latitude_deg": 57.490, "longitude_deg": 18.420 },
+          "altitude_ft": 24000,
+          "course_deg": 50,
+          "speed_kts": 445
+        }
+      },
+      "delay_ms": 400,
+      "repeat": 1
+    },
+    {
+      "id": "ew-coordination",
+      "name": "EW coordination during merge (J11.0)",
+      "message": {
+        "j_series": "J11.0",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 8,
+          "track_number": 201,
+          "ew_action": 2
+        }
+      },
+      "delay_ms": 1500,
+      "repeat": 1
+    },
+    {
+      "id": "dogfight-mig1-crank",
+      "name": "MiG #1 defensive crank (J3.2)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 2,
+          "track_number": 201,
+          "identity": 6,
+          "platform": 1,
+          "mode3a": 7770,
+          "position": { "latitude_deg": 57.505, "longitude_deg": 18.650 },
+          "altitude_ft": 22000,
+          "course_deg": 315,
+          "speed_kts": 460
+        }
+      },
+      "delay_ms": 2000,
+      "repeat": 1
+    },
+    {
+      "id": "engagement-status",
+      "name": "Engagement status update (J10.1)",
+      "message": {
+        "j_series": "J10.1",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 7,
+          "track_number": 201,
+          "status_code": 3
+        }
+      },
+      "delay_ms": 1000,
+      "repeat": 1
+    },
+    {
+      "id": "disengage-hold-fire",
+      "name": "STRIC HOLD FIRE – disengage (J10.0)",
+      "message": {
+        "j_series": "J10.0",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 7,
+          "track_number": 201,
+          "engagement_status": 1
+        }
+      },
+      "delay_ms": 2000,
+      "repeat": 1
+    },
+    {
+      "id": "c2-exercise-end",
+      "name": "Dogfight exercise closed (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 5,
+          "track_number": 101,
+          "text": "GOTLAND DOGFight ENDEX. Hostiles RTB east, JAS section RTB Visby."
+        }
+      },
+      "delay_ms": 1000,
+      "repeat": 1
+    }
+  ]
+}

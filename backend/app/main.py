@@ -19,6 +19,7 @@ def create_app() -> FastAPI:
     settings.shared_link16_configurations_dir.mkdir(parents=True, exist_ok=True)
     settings.scenarios_dir.mkdir(parents=True, exist_ok=True)
     settings.link16_scenarios_dir.mkdir(parents=True, exist_ok=True)
+    settings.shared_link16_scenarios_dir.mkdir(parents=True, exist_ok=True)
 
     app = FastAPI(
         title="Obelix",

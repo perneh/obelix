@@ -1,0 +1,309 @@
+{
+  "id": "c2-network-mesh",
+  "name": "C2 network mesh – five nodes",
+  "description": "Five Link 16 C2 nodes (Swedish STRIC, Finnish CRC, Estonian CRC, NATO CAOC, AWACS relay) exchange network status, participation, text, and parametric updates simulating a multi-node Baltic picture.",
+  "transport": {
+    "host": "host.docker.internal",
+    "port": 8700,
+    "protocol": "udp"
+  },
+  "loop_count": 1,
+  "interval_ms": 1800,
+  "steps": [
+    {
+      "id": "node1-status",
+      "name": "Swedish STRIC online (J0.0, JU 10001)",
+      "message": {
+        "j_series": "J0.0",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 0,
+          "network_status": 1,
+          "active_participants": 5
+        }
+      },
+      "delay_ms": 0,
+      "repeat": 1
+    },
+    {
+      "id": "node2-status",
+      "name": "Finnish CRC online (J0.0, JU 10002)",
+      "message": {
+        "j_series": "J0.0",
+        "fields": {
+          "source_ju": 10002,
+          "npg": 0,
+          "network_status": 1,
+          "active_participants": 5
+        }
+      },
+      "delay_ms": 400,
+      "repeat": 1
+    },
+    {
+      "id": "node3-status",
+      "name": "Estonian CRC online (J0.0, JU 10003)",
+      "message": {
+        "j_series": "J0.0",
+        "fields": {
+          "source_ju": 10003,
+          "npg": 0,
+          "network_status": 1,
+          "active_participants": 5
+        }
+      },
+      "delay_ms": 400,
+      "repeat": 1
+    },
+    {
+      "id": "node4-status",
+      "name": "NATO CAOC online (J0.0, JU 10004)",
+      "message": {
+        "j_series": "J0.0",
+        "fields": {
+          "source_ju": 10004,
+          "npg": 0,
+          "network_status": 1,
+          "active_participants": 5
+        }
+      },
+      "delay_ms": 400,
+      "repeat": 1
+    },
+    {
+      "id": "node5-status",
+      "name": "AWACS relay online (J0.0, JU 10005)",
+      "message": {
+        "j_series": "J0.0",
+        "fields": {
+          "source_ju": 10005,
+          "npg": 0,
+          "network_status": 1,
+          "active_participants": 5
+        }
+      },
+      "delay_ms": 400,
+      "repeat": 1
+    },
+    {
+      "id": "node1-participation",
+      "name": "STRIC NPG participation (J0.1)",
+      "message": {
+        "j_series": "J0.1",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 0,
+          "participation_status": 1
+        }
+      },
+      "delay_ms": 800,
+      "repeat": 1
+    },
+    {
+      "id": "node2-participation",
+      "name": "Finnish CRC participation (J0.1)",
+      "message": {
+        "j_series": "J0.1",
+        "fields": {
+          "source_ju": 10002,
+          "npg": 0,
+          "participation_status": 1
+        }
+      },
+      "delay_ms": 300,
+      "repeat": 1
+    },
+    {
+      "id": "node3-participation",
+      "name": "Estonian CRC participation (J0.1)",
+      "message": {
+        "j_series": "J0.1",
+        "fields": {
+          "source_ju": 10003,
+          "npg": 0,
+          "participation_status": 1
+        }
+      },
+      "delay_ms": 300,
+      "repeat": 1
+    },
+    {
+      "id": "node4-participation",
+      "name": "NATO CAOC participation (J0.1)",
+      "message": {
+        "j_series": "J0.1",
+        "fields": {
+          "source_ju": 10004,
+          "npg": 0,
+          "participation_status": 1
+        }
+      },
+      "delay_ms": 300,
+      "repeat": 1
+    },
+    {
+      "id": "node5-participation",
+      "name": "AWACS relay participation (J0.1)",
+      "message": {
+        "j_series": "J0.1",
+        "fields": {
+          "source_ju": 10005,
+          "npg": 0,
+          "participation_status": 1
+        }
+      },
+      "delay_ms": 300,
+      "repeat": 1
+    },
+    {
+      "id": "caoc-sim-start",
+      "name": "CAOC starts distributed exercise (J15.0)",
+      "message": {
+        "j_series": "J15.0",
+        "fields": {
+          "source_ju": 10004,
+          "npg": 10,
+          "simulation_state": 1,
+          "text": "BALTIC MESH EXERCISE: all C2 nodes synchronize NPG 0/2/5 picture."
+        }
+      },
+      "delay_ms": 1200,
+      "repeat": 1
+    },
+    {
+      "id": "stric-text",
+      "name": "STRIC mesh broadcast (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 5,
+          "track_number": 1,
+          "text": "STRIC: Swedish sector picture ready, forwarding tracks to mesh."
+        }
+      },
+      "delay_ms": 1000,
+      "repeat": 1
+    },
+    {
+      "id": "fi-text",
+      "name": "Finnish CRC mesh broadcast (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10002,
+          "npg": 5,
+          "track_number": 1,
+          "text": "FI CRC: Gulf of Bothnia sector clear, joining merged picture."
+        }
+      },
+      "delay_ms": 1000,
+      "repeat": 1
+    },
+    {
+      "id": "ee-text",
+      "name": "Estonian CRC mesh broadcast (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10003,
+          "npg": 5,
+          "track_number": 1,
+          "text": "EE CRC: Tallinn sector online, relaying Baltic east tracks."
+        }
+      },
+      "delay_ms": 1000,
+      "repeat": 1
+    },
+    {
+      "id": "caoc-text",
+      "name": "NATO CAOC coordination (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10004,
+          "npg": 5,
+          "track_number": 1,
+          "text": "CAOC: mesh timing synchronized, all nodes report green."
+        }
+      },
+      "delay_ms": 1000,
+      "repeat": 1
+    },
+    {
+      "id": "awacs-text",
+      "name": "AWACS relay coordination (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10005,
+          "npg": 5,
+          "track_number": 1,
+          "text": "AWACS: air picture relay active, 12 tracks forwarded to mesh."
+        }
+      },
+      "delay_ms": 1000,
+      "repeat": 1
+    },
+    {
+      "id": "stric-param",
+      "name": "STRIC parametric update (J14.0)",
+      "message": {
+        "j_series": "J14.0",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 9,
+          "parameter_id": 200,
+          "parameter_value": 590000
+        }
+      },
+      "delay_ms": 1200,
+      "repeat": 1
+    },
+    {
+      "id": "fi-param",
+      "name": "Finnish CRC parametric update (J14.0)",
+      "message": {
+        "j_series": "J14.0",
+        "fields": {
+          "source_ju": 10002,
+          "npg": 9,
+          "parameter_id": 201,
+          "parameter_value": 610000
+        }
+      },
+      "delay_ms": 800,
+      "repeat": 1
+    },
+    {
+      "id": "ee-param",
+      "name": "Estonian CRC parametric update (J14.0)",
+      "message": {
+        "j_series": "J14.0",
+        "fields": {
+          "source_ju": 10003,
+          "npg": 9,
+          "parameter_id": 202,
+          "parameter_value": 590500
+        }
+      },
+      "delay_ms": 800,
+      "repeat": 1
+    },
+    {
+      "id": "caoc-endex",
+      "name": "CAOC ends mesh exercise (J15.0)",
+      "message": {
+        "j_series": "J15.0",
+        "fields": {
+          "source_ju": 10004,
+          "npg": 10,
+          "simulation_state": 0,
+          "text": "BALTIC MESH ENDEX: all five C2 nodes acknowledge shutdown."
+        }
+      },
+      "delay_ms": 1500,
+      "repeat": 1
+    }
+  ]
+}

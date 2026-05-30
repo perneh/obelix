@@ -1,0 +1,210 @@
+{
+  "id": "jas-uppsala-visby",
+  "name": "JAS 39 – Uppsala → Visby training sortie",
+  "description": "Single Gripen on a bilateral training transit from Uppsala/Arlanda area to Visby. Swedish STRIC (JU 10001) assigns the sortie; JAS 7341 (JU 11001) reports PPLI and air tracks along the Baltic route.",
+  "transport": {
+    "host": "host.docker.internal",
+    "port": 8700,
+    "protocol": "udp"
+  },
+  "loop_count": 1,
+  "interval_ms": 3000,
+  "steps": [
+    {
+      "id": "c2-exercise-order",
+      "name": "STRIC assigns training transit (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 5,
+          "track_number": 101,
+          "text": "EXERCISE BALTIC TRANSIT: JAS 7341 cleared Uppsala–Visby FL280, squawk 7341, NPG 2 picture."
+        }
+      },
+      "delay_ms": 0,
+      "repeat": 1
+    },
+    {
+      "id": "jas-ppli-departure",
+      "name": "JAS PPLI at Uppsala/Arlanda (J2.3)",
+      "message": {
+        "j_series": "J2.3",
+        "fields": {
+          "source_ju": 11001,
+          "npg": 1,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 7341,
+          "position": { "latitude_deg": 59.652, "longitude_deg": 17.919 },
+          "altitude_ft": 2000,
+          "course_deg": 145,
+          "speed_kts": 180
+        }
+      },
+      "delay_ms": 500,
+      "repeat": 1
+    },
+    {
+      "id": "track-climb",
+      "name": "Climbing through FL120 east of Uppsala (J3.2)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 2,
+          "track_number": 101,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 7341,
+          "position": { "latitude_deg": 59.580, "longitude_deg": 18.020 },
+          "altitude_ft": 12000,
+          "course_deg": 150,
+          "speed_kts": 320
+        }
+      },
+      "delay_ms": 2000,
+      "repeat": 1
+    },
+    {
+      "id": "track-fl280-norrtalje",
+      "name": "Level FL280 over Norrtälje bay (J3.2)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 2,
+          "track_number": 101,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 7341,
+          "position": { "latitude_deg": 59.480, "longitude_deg": 18.120 },
+          "altitude_ft": 28000,
+          "course_deg": 155,
+          "speed_kts": 420
+        }
+      },
+      "delay_ms": 2000,
+      "repeat": 1
+    },
+    {
+      "id": "track-mid-baltic-1",
+      "name": "Cruise mid-Baltic leg 1 (J3.2)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 2,
+          "track_number": 101,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 7341,
+          "position": { "latitude_deg": 59.100, "longitude_deg": 18.180 },
+          "altitude_ft": 28000,
+          "course_deg": 160,
+          "speed_kts": 430
+        }
+      },
+      "delay_ms": 2000,
+      "repeat": 1
+    },
+    {
+      "id": "track-mid-baltic-2",
+      "name": "Cruise mid-Baltic leg 2 (J3.2)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 2,
+          "track_number": 101,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 7341,
+          "position": { "latitude_deg": 58.720, "longitude_deg": 18.220 },
+          "altitude_ft": 28000,
+          "course_deg": 165,
+          "speed_kts": 430
+        }
+      },
+      "delay_ms": 2000,
+      "repeat": 1
+    },
+    {
+      "id": "track-gotland-west",
+      "name": "West of Gotland, begin descent (J3.2)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 2,
+          "track_number": 101,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 7341,
+          "position": { "latitude_deg": 58.200, "longitude_deg": 18.260 },
+          "altitude_ft": 22000,
+          "course_deg": 170,
+          "speed_kts": 380
+        }
+      },
+      "delay_ms": 2000,
+      "repeat": 1
+    },
+    {
+      "id": "track-visby-approach",
+      "name": "Visby TMA approach (J3.2)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 2,
+          "track_number": 101,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 7341,
+          "position": { "latitude_deg": 57.850, "longitude_deg": 18.280 },
+          "altitude_ft": 8000,
+          "course_deg": 175,
+          "speed_kts": 280
+        }
+      },
+      "delay_ms": 2000,
+      "repeat": 1
+    },
+    {
+      "id": "jas-ppli-visby",
+      "name": "JAS PPLI on Visby final (J2.3)",
+      "message": {
+        "j_series": "J2.3",
+        "fields": {
+          "source_ju": 11001,
+          "npg": 1,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 7341,
+          "position": { "latitude_deg": 57.635, "longitude_deg": 18.294 },
+          "altitude_ft": 1500,
+          "course_deg": 180,
+          "speed_kts": 160
+        }
+      },
+      "delay_ms": 1500,
+      "repeat": 1
+    },
+    {
+      "id": "c2-sortie-complete",
+      "name": "STRIC closes exercise (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 5,
+          "track_number": 101,
+          "text": "BALTIC TRANSIT complete. JAS 7341 landed Visby, training sortie closed."
+        }
+      },
+      "delay_ms": 1000,
+      "repeat": 1
+    }
+  ]
+}

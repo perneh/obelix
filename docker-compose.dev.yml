@@ -23,6 +23,7 @@ services:
       - ./configurations:/app/configurations
       - ./data:/app/data
       - ./docs/categories:/app/docs/categories:ro
+      - ./docs/link16:/app/docs/link16:ro
       - ./scenarios:/app/scenarios:ro
       - ./pyproject.toml:/app/pyproject.toml:ro
     environment:

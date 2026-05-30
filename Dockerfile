@@ -14,6 +14,7 @@ COPY frontend/ frontend/
 COPY configurations/ configurations/
 COPY scenarios/ scenarios/
 COPY docs/categories/ docs/categories/
+COPY docs/link16/ docs/link16/
 COPY data/ data/
 
 RUN pip install --no-cache-dir --upgrade pip \

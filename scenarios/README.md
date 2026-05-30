@@ -12,6 +12,8 @@ Each scenario includes steps for **all implemented categories** (015, 016, 021, 
 
 Custom scenarios saved from the UI go to `data/scenarios/` (local). Copy JSON into `scenarios/shared/` and commit when you want a variant in git.
 
+**Link 16 scenarios** live under `scenarios/link16/shared/` (repository) and `data/link16_scenarios/` (local). See [scenarios/link16/README.md](link16/README.md).
+
 Regenerate shared JSON from Python templates:
 
 ```bash

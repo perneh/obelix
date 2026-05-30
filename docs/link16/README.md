@@ -37,6 +37,12 @@ Obelix implements Link 16 J-series messages as encoders with matching UI forms, 
 | `POST /api/link16/encode` | Encode to hex |
 | `POST /api/link16/send` | Generic send |
 | `POST /api/link16/send/{J3-2}` | Typed send with Swagger example |
+| `POST /api/link16/scenarios/validate` | Validate scenario JSON |
+| `POST /api/link16/scenarios/run` | Run scenario |
+| `GET /api/link16/saved-scenarios` | List local + shared scenarios |
+| `POST /api/link16/saved-scenarios` | Save scenario to `data/link16_scenarios/` |
+
+Pre-built scenarios: [scenarios/link16/README.md](../../scenarios/link16/README.md).
 
 ## Simulating multiple C2 nodes
 
@@ -48,7 +54,7 @@ Capture in Wireshark: [Wireshark & Link 16](../wireshark-link16.md) (port **8700
 
 1. Add fields in `backend/app/link16/messages/` (or use `make_j_message_class`)
 2. Register in the family module and `registry.py`
-3. Add help under `docs/link16/{j3-2}.md`
+3. Add help under `docs/link16/{j3-2}.md` (optional — overrides auto-generated help from the field schema)
 4. Add unit/regression tests
 
 Reference: [STANAG 5516](https://www.nato.int/) Link 16 tactical data link.

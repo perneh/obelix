@@ -4,35 +4,52 @@
 
 ```mermaid
 flowchart TD
-    start([Open Obelix]) --> tab{Tab}
+    start([Open Obelix]) --> proto{Protocol dropdown}
 
-    tab -->|Message Editor| cat[Select category]
-    cat --> form[Edit fields]
-    form --> act{Action}
+    proto -->|ASTERIX| axView{ASTERIX view}
+    proto -->|Link 16| l16View{Link 16 view}
 
-    act -->|Generate Hex| enc["POST /api/encode"]
-    enc --> hex[Preview hex]
+    axView -->|Message Editor| axForm[Select category and edit fields]
+    axView -->|Scenario Builder| axScn[Add steps delay loop motion]
+    axView -->|Configurations| axLib[Load configs and scenarios]
 
-    act -->|Send UDP or TCP| snd["POST /api/send"]
-    snd --> rx[(Receiver)]
+    l16View -->|Message Editor| l16Form[Select J-message and edit fields]
+    l16View -->|Scenario Builder| l16Scn[Add J-message steps]
+    l16View -->|Configurations| l16Lib[Load configs and scenarios]
 
-    act -->|Save locally| savcfg["POST /api/configurations"]
+    axForm --> axAct{Action}
+    axAct -->|Generate Hex| axEnc["POST /api/encode"]
+    axAct -->|Send UDP/TCP| axSnd["POST /api/send — port 8600"]
+    axAct -->|Save locally| axCfg["POST /api/configurations"]
+    axEnc --> axHex[Preview hex]
 
-    tab -->|Scenario Builder| add[Add step from message]
-    add --> tune[Delay repeat loop motion]
-    tune --> ctl{Run control}
+    l16Form --> l16Act{Action}
+    l16Act -->|Generate Hex| l16Enc["POST /api/link16/encode"]
+    l16Act -->|Send UDP/TCP| l16Snd["POST /api/link16/send — port 8700"]
+    l16Act -->|Save locally| l16Cfg["POST /api/link16/configurations"]
+    l16Enc --> l16Hex[Preview JREAP hex]
 
-    ctl -->|Start Pause Stop| run[Scenario runner]
-    run --> snd
+    axScn --> axJson[Export / import JSON]
+    axScn --> axRun[ASTERIX scenario runner]
+    axRun --> axSnd
+    axScn --> axSav["POST /api/saved-scenarios"]
 
-    tune --> savscn["POST /api/saved-scenarios"]
+    l16Scn --> l16Json[Export / import JSON]
+    l16Scn --> l16Run[Link 16 scenario runner]
+    l16Run --> l16Snd
+    l16Scn --> l16Sav["POST /api/link16/saved-scenarios"]
 
-    tab -->|Configurations| lib[Load saved items]
-    lib --> form
-    lib --> tune
+    axLib --> axForm
+    axLib --> axScn
+    l16Lib --> l16Form
+    l16Lib --> l16Scn
+    axCfg --> axLib
+    axSav --> axLib
+    l16Cfg --> l16Lib
+    l16Sav --> l16Lib
 
-    savcfg --> lib
-    savscn --> lib
+    axSnd --> rx8600[(Receiver :8600)]
+    l16Snd --> rx8700[(Receiver :8700)]
 ```
 
 ### Scenario execution flow
@@ -51,9 +68,9 @@ flowchart LR
 flowchart TD
     step[Next step] --> wait{Delay?}
     wait -->|Yes| delay[Wait delay_ms]
-    wait -->|No| encode[Encode ASTERIX]
+    wait -->|No| encode[Encode message]
     delay --> encode
-    encode --> motion{Motion enabled?}
+    encode --> motion{ASTERIX motion enabled?}
     motion -->|Yes| ticks[Send ticks with new position]
     motion -->|No| repeat[Send repeat count]
     ticks --> more{More steps?}
@@ -63,12 +80,18 @@ flowchart TD
     interval --> step
 ```
 
+> **Note:** Route animation (motion) applies to ASTERIX categories 015, 021, 034, 048, 062, and 240 only. Link 16 scenarios send one J-message per step (use different **Source JU** values to simulate multiple C2 nodes).
+
 ## Message editor
 
-1. Select an ASTERIX category from the sidebar.
+Use **ASTERIX → Message Editor** or **Link 16 → Message Editor** from the header dropdowns.
+
+### ASTERIX
+
+1. Select a category from the sidebar.
 2. Edit field values in the form.
 3. Click **Generate Hex** to preview the encoded binary data.
-4. Configure host/port and click **Send via UDP** (or TCP).
+4. Configure host/port and click **Send via UDP** (or TCP) — default port **8600**.
 
 ### REST API (FastAPI / Swagger)
 
@@ -100,7 +123,7 @@ Use `POST /api/send` when you need one endpoint for all categories (category is 
 
 ## Link 16 (J-messages)
 
-Open the **Link 16** tab to edit and send J-series messages the same way as ASTERIX categories. Default JREAP port is **8700**.
+Use the header dropdown **Link 16 → Message Editor** to edit and send J-series messages the same way as ASTERIX categories. Default JREAP port is **8700**.
 
 | Family | Examples |
 |--------|----------|
@@ -111,10 +134,32 @@ Open the **Link 16** tab to edit and send J-series messages the same way as ASTE
 
 Set **Source JU** to simulate different C2 participants sending to the same gateway. API: `GET /api/link16/messages`, `POST /api/link16/encode`, `POST /api/link16/send/J3-2`. See [docs/link16/README.md](../link16/README.md).
 
+### Link 16 scenario builder
+
+1. **Link 16 → Message Editor** — configure a J-message and click **Add to Scenario →**.
+2. **Link 16 → Scenario Builder** — review steps, set transport (port **8700**), loop count and interval.
+3. **Start Scenario** to send steps in order (each step can use a different **Source JU**).
+
+Pre-built exercises: [scenarios/link16/shared/](../scenarios/link16/shared/) (JAS transit, dogfight, marking run, C2 bilateral, C2 mesh). Load from **Link 16 → Configurations & Scenarios**.
+
+### Link 16 export / import JSON
+
+Same workflow as ASTERIX, in **Link 16 → Scenario Builder**:
+
+| Action | Result |
+|--------|--------|
+| **Download .json file** | Browser download |
+| **Save locally & download** | Writes `data/link16_scenarios/{id}.json` and downloads a copy |
+| **Import .json file** / **Apply JSON** | Load and validate via `POST /api/link16/scenarios/validate` |
+
+From **Link 16 → Configurations & Scenarios**, use **Export** on a saved scenario or **Import .json file**.
+
 ## Scenario builder
 
-1. Configure messages in the Message Editor tab.
-2. Switch to **Scenario Builder** and click **Add Step from Current Message**.
+### ASTERIX
+
+1. Configure messages in **ASTERIX → Message Editor**.
+2. Switch to **ASTERIX → Scenario Builder** and click **Add Step from Current Message**.
 3. Set delays, repeats, loop count and interval.
 4. For moving tracks (Cat 015, 021, 034, 048, 062, 240): enable **Animate route** on a step, set the end waypoint, **Ticks** (number of updates), and **Interval (ms)** between updates.
 5. Click **Start** to run; use **Pause**, **Resume**, and **Stop** to control execution.
@@ -177,9 +222,9 @@ API: `GET /api/scenario-templates`, `POST /api/scenario-templates/{id}/build` wi
 
 See [scenarios/README.md](../scenarios/README.md) for regenerating shared JSON from Python.
 
-### Export / import JSON files
+### Export / import JSON files (ASTERIX)
 
-Scenarios are JSON files on disk (`data/scenarios/` locally, `scenarios/shared/` in git). From **Scenario Builder**:
+Scenarios are JSON files on disk (`data/scenarios/` locally, `scenarios/shared/` in git). From **ASTERIX → Scenario Builder**:
 
 | Action | Result |
 |--------|--------|
@@ -189,7 +234,7 @@ Scenarios are JSON files on disk (`data/scenarios/` locally, `scenarios/shared/`
 | **Import .json file** | Load an edited file into the builder (validated) |
 | **Apply JSON** | Load from the inline JSON editor |
 
-From **Configurations & Scenarios**, use **Export** on a saved scenario or **Import .json file**.
+From **ASTERIX → Configurations & Scenarios**, use **Export** on a saved scenario or **Import .json file**.
 
 API download: `GET /api/saved-scenarios/{id}/file` returns the same JSON as on disk.
 
@@ -199,7 +244,7 @@ API download: `GET /api/saved-scenarios/{id}/file` returns the same JSON as on d
 
 When running with `./obelix start --tools`, a UDP listener is started automatically on port 8600.
 
-The UI is organised by **protocol** (ASTERIX or Link 16), then by **Message Editor**, **Scenario Builder**, and **Configurations & Scenarios**.
+The UI uses header **dropdown menus** for **ASTERIX** and **Link 16**, each with **Message Editor**, **Scenario Builder**, and **Configurations & Scenarios**.
 
 For decoding traffic in Wireshark:
 

@@ -31,6 +31,10 @@ case "${1:-all}" in
     shift
     run_pytest backend/tests/regression -m regression "$@"
     ;;
+  frontend)
+    shift
+    run_pytest backend/tests/frontend -m frontend "$@"
+    ;;
   cov)
     run_pytest --cov=app --cov-report=term-missing
     ;;

@@ -46,13 +46,13 @@ Wireshark may **not** decode this as Link 16 automatically — you will often se
 
 #### 3. Send from Obelix
 
-Open the **Link 16** tab, select a J-message (e.g. **J3.2 Air Track**), set host/port, click **Send via UDP**.
+Open **Link 16 → Message Editor**, select a J-message (e.g. **J3.2 Air Track**), set host/port, click **Send via UDP**.
 
 Default transport in the Link 16 tab: `host.docker.internal:8700` (change to `127.0.0.1` for local loopback capture).
 
 ### Docker
 
-Same principles as ASTERIX — see [Wireshark + Docker use case](wireshark-docker-usecase.md), but use port **8700** and the **Link 16** tab.
+Same principles as ASTERIX — see [Wireshark + Docker use case](wireshark-docker-usecase.md), but use port **8700** and **Link 16 → Message Editor** in the UI.
 
 | Send target in UI | Where packets go | Wireshark interface |
 |-------------------|------------------|---------------------|

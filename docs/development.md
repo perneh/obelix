@@ -15,7 +15,15 @@ See [backend/tests/README.md](../backend/tests/README.md) for the full guide.
 | Integration | `./scripts/test.sh integration` |
 | Live (server required) | `./scripts/test.sh live --address=localhost --port=8000` |
 | Regression (server required) | `./scripts/test.sh regression --address=localhost --port=8000` |
+| Frontend / Playwright (server required) | `./scripts/test.sh frontend --address=localhost --port=8000` |
 | Coverage | `./scripts/test.sh cov` |
+
+Install Playwright browsers once for frontend tests:
+
+```bash
+pip install -e ".[dev]"
+playwright install chromium
+```
 
 Stop on first failure and print per-test results:
 
@@ -50,6 +58,8 @@ The frontend will automatically pick up the new category via the API.
 |----------|---------|-------------|
 | `OBELIX_SHARED_CONFIGURATIONS_DIR` | `configurations` | Git-tracked presets (`scope=shared`) |
 | `OBELIX_LOCAL_CONFIGURATIONS_DIR` | `data/configurations` | Local saves (`scope=local`) |
-| `OBELIX_SCENARIOS_DIR` | `data/scenarios` | Saved scenarios |
+| `OBELIX_SCENARIOS_DIR` | `data/scenarios` | Saved ASTERIX scenarios |
+| `OBELIX_LINK16_SCENARIOS_DIR` | `data/link16_scenarios` | Saved Link 16 scenarios (local) |
+| `OBELIX_SHARED_LINK16_SCENARIOS_DIR` | `scenarios/link16/shared` | Git-tracked Link 16 scenario library |
 | `OBELIX_HOST` | `0.0.0.0` | Server bind host |
 | `OBELIX_PORT` | `8000` | Server bind port |

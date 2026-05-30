@@ -383,6 +383,30 @@
         </fieldset>
       </div>
 
+      <div class="card scenario-json-card">
+        <h3>Edit scenario as JSON file</h3>
+        <p class="muted section-desc">
+          Scenarios are JSON files (same format as <code>data/link16_scenarios/</code> and
+          <code>scenarios/link16/shared/</code>). Export to edit in VS Code, vim, or any editor — then import back.
+        </p>
+        <div class="actions">
+          <button type="button" id="btn-link16-export-scenario" class="btn secondary">Download .json file</button>
+          <button type="button" id="btn-link16-save-export-scenario" class="btn secondary">Save locally &amp; download</button>
+          <button type="button" id="btn-link16-import-scenario" class="btn secondary">Import .json file</button>
+          <button type="button" id="btn-link16-sync-json-editor" class="btn secondary">Refresh editor</button>
+          <button type="button" id="btn-link16-apply-json-editor" class="btn primary">Apply JSON</button>
+        </div>
+        <p class="field-hint">
+          <strong>Workflow:</strong> Download .json → edit externally → Import .json or paste below → Apply JSON → Run.
+          Use <em>Save locally &amp; download</em> to write to <code>data/link16_scenarios/</code> and get a copy on disk.
+        </p>
+        <input type="file" id="link16-scenario-import-file" accept=".json,application/json" hidden>
+        <label class="json-editor-label" for="link16-scenario-json-editor">Scenario JSON</label>
+        <textarea id="link16-scenario-json-editor" class="json-editor" rows="14" spellcheck="false"
+          placeholder='Paste or edit Link 16 scenario JSON here, then click "Apply JSON".'></textarea>
+        <p id="link16-scenario-json-status" class="field-hint"></p>
+      </div>
+
       <div class="card scenario-run-card">
         <h3>Run scenario</h3>
         <div class="actions run-actions">
@@ -391,6 +415,7 @@
           <button type="button" id="btn-link16-resume-scenario" class="btn secondary" disabled>Resume</button>
           <button type="button" id="btn-link16-stop-scenario" class="btn secondary" disabled>Stop</button>
           <button type="button" id="btn-link16-save-scenario" class="btn secondary">Save locally</button>
+          <button type="button" id="btn-link16-export-scenario-run" class="btn secondary">Download .json</button>
         </div>
         <pre id="link16-scenario-status" class="status-block">Ready — add steps, then click Start Scenario.</pre>
       </div>
@@ -440,7 +465,11 @@
         </div>
         <div class="card">
           <h2>Link 16 · Saved scenarios</h2>
-          <p class="muted">Local scenarios in <code>data/link16_scenarios/</code>.</p>
+          <p class="muted">Repository scenarios: <code>scenarios/link16/shared/*.json</code>. Local: <code>data/link16_scenarios/</code>. Edit files externally or use export/import below.</p>
+          <div class="actions library-scenario-actions">
+            <button type="button" id="btn-link16-library-import-scenario" class="btn secondary btn-sm">Import .json file</button>
+          </div>
+          <input type="file" id="link16-scenario-library-import-file" accept=".json,application/json" hidden>
           <ul id="link16-saved-scenario-list" class="item-list"></ul>
         </div>
       </div>

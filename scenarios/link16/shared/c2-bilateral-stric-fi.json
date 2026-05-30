@@ -1,0 +1,190 @@
+{
+  "id": "c2-bilateral-stric-fi",
+  "name": "C2 bilateral – Swedish STRIC ↔ Finnish CRC",
+  "description": "Directed Link 16 exchange between Swedish STRIC (JU 10001) and Finnish CRC (JU 10002): network status, participation, parametric handoff, and free-text orders simulating a bilateral C2 dialogue on NPG 0/5/9.",
+  "transport": {
+    "host": "host.docker.internal",
+    "port": 8700,
+    "protocol": "udp"
+  },
+  "loop_count": 1,
+  "interval_ms": 2000,
+  "steps": [
+    {
+      "id": "se-network-online",
+      "name": "Swedish STRIC network online (J0.0)",
+      "message": {
+        "j_series": "J0.0",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 0,
+          "network_status": 1,
+          "active_participants": 2
+        }
+      },
+      "delay_ms": 0,
+      "repeat": 1
+    },
+    {
+      "id": "fi-network-online",
+      "name": "Finnish CRC network online (J0.0)",
+      "message": {
+        "j_series": "J0.0",
+        "fields": {
+          "source_ju": 10002,
+          "npg": 0,
+          "network_status": 1,
+          "active_participants": 2
+        }
+      },
+      "delay_ms": 800,
+      "repeat": 1
+    },
+    {
+      "id": "se-participation",
+      "name": "STRIC NPG participation (J0.1)",
+      "message": {
+        "j_series": "J0.1",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 0,
+          "participation_status": 1
+        }
+      },
+      "delay_ms": 600,
+      "repeat": 1
+    },
+    {
+      "id": "fi-participation",
+      "name": "Finnish CRC NPG participation (J0.1)",
+      "message": {
+        "j_series": "J0.1",
+        "fields": {
+          "source_ju": 10002,
+          "npg": 0,
+          "participation_status": 1
+        }
+      },
+      "delay_ms": 600,
+      "repeat": 1
+    },
+    {
+      "id": "se-handshake-text",
+      "name": "STRIC opens bilateral channel (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 5,
+          "track_number": 1,
+          "text": "STRIC to FI CRC: bilateral C2 channel open, request sector handoff 60N–62N 18E–21E."
+        }
+      },
+      "delay_ms": 1000,
+      "repeat": 1
+    },
+    {
+      "id": "fi-handshake-reply",
+      "name": "Finnish CRC replies (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10002,
+          "npg": 5,
+          "track_number": 1,
+          "text": "FI CRC to STRIC: channel acknowledged, ready for parametric handoff and picture merge."
+        }
+      },
+      "delay_ms": 1500,
+      "repeat": 1
+    },
+    {
+      "id": "se-parametric-handoff",
+      "name": "STRIC parametric sector boundary (J14.0)",
+      "message": {
+        "j_series": "J14.0",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 9,
+          "parameter_id": 100,
+          "parameter_value": 620000
+        }
+      },
+      "delay_ms": 1200,
+      "repeat": 1
+    },
+    {
+      "id": "fi-parametric-ack",
+      "name": "Finnish CRC parametric ack (J14.0)",
+      "message": {
+        "j_series": "J14.0",
+        "fields": {
+          "source_ju": 10002,
+          "npg": 9,
+          "parameter_id": 100,
+          "parameter_value": 620001
+        }
+      },
+      "delay_ms": 1200,
+      "repeat": 1
+    },
+    {
+      "id": "se-network-mgmt",
+      "name": "STRIC join NPG 2 for merged picture (J0.2)",
+      "message": {
+        "j_series": "J0.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 0,
+          "management_action": 1
+        }
+      },
+      "delay_ms": 1000,
+      "repeat": 1
+    },
+    {
+      "id": "fi-network-mgmt",
+      "name": "FI CRC join NPG 2 (J0.2)",
+      "message": {
+        "j_series": "J0.2",
+        "fields": {
+          "source_ju": 10002,
+          "npg": 0,
+          "management_action": 1
+        }
+      },
+      "delay_ms": 800,
+      "repeat": 1
+    },
+    {
+      "id": "se-close-channel",
+      "name": "STRIC closes bilateral session (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 5,
+          "track_number": 1,
+          "text": "STRIC to FI CRC: handoff complete, leaving NPG 2, bilateral session closed."
+        }
+      },
+      "delay_ms": 1500,
+      "repeat": 1
+    },
+    {
+      "id": "fi-close-channel",
+      "name": "Finnish CRC session closed (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10002,
+          "npg": 5,
+          "track_number": 1,
+          "text": "FI CRC to STRIC: acknowledged, bilateral C2 session terminated."
+        }
+      },
+      "delay_ms": 1000,
+      "repeat": 1
+    }
+  ]
+}

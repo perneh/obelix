@@ -3,7 +3,14 @@
  */
 
 import { renderMarkdown } from "./markdown.js";
-import { formatApiError } from "./scenario-io.js";
+import {
+  downloadScenarioJson,
+  downloadScenarioFileFromApi,
+  formatApiError,
+  scenarioFilename,
+  scenarioToJsonString,
+  validateScenarioJson,
+} from "./scenario-io.js";
 import { navigateTo, onNavigate } from "./navigation.js";
 
 const API = "/api/link16";
@@ -19,6 +26,7 @@ const state = {
   helpOpen: false,
   scenarioSteps: [],
   activeScenarioId: null,
+  scenarioDescription: "",
   scenarioRunning: false,
   scenarioPaused: false,
   statusPollTimer: null,
@@ -251,8 +259,10 @@ async function selectMessage(jSeries) {
   document.getElementById("link16-description").textContent = state.messageDef.description;
 
   const helpBtn = document.getElementById("btn-link16-help");
-  helpBtn.hidden = false;
-  helpBtn.setAttribute("aria-expanded", "false");
+  if (helpBtn) {
+    helpBtn.hidden = false;
+    helpBtn.setAttribute("aria-expanded", "false");
+  }
   document.getElementById("link16-help-panel").classList.add("hidden");
   document.getElementById("link16-help-panel").innerHTML = "";
   document.getElementById("link16-hex-output").textContent = "—";
@@ -402,6 +412,7 @@ async function loadLink16Library() {
                 <span>${s.name} (${s.steps.length} steps)</span>
                 <span class="item-actions">
                   <button data-link16-load-scenario="${s.id}">Load</button>
+                  <button data-link16-export-scenario="${s.id}">Export</button>
                   <button data-link16-delete-scenario="${s.id}">Delete</button>
                 </span>
               </li>`
@@ -411,6 +422,9 @@ async function loadLink16Library() {
 
     scenarioList.querySelectorAll("[data-link16-load-scenario]").forEach((btn) => {
       btn.addEventListener("click", () => loadLink16SavedScenario(btn.dataset.link16LoadScenario));
+    });
+    scenarioList.querySelectorAll("[data-link16-export-scenario]").forEach((btn) => {
+      btn.addEventListener("click", () => exportLink16SavedScenario(btn.dataset.link16ExportScenario));
     });
     scenarioList.querySelectorAll("[data-link16-delete-scenario]").forEach((btn) => {
       btn.addEventListener("click", () => deleteLink16SavedScenario(btn.dataset.link16DeleteScenario));
@@ -480,6 +494,7 @@ function buildLink16ScenarioPayload() {
   return {
     id: state.activeScenarioId || `link16-${Date.now().toString(36)}`,
     name,
+    description: state.scenarioDescription || "",
     transport: {
       host: document.getElementById("link16-scenario-host")?.value || "host.docker.internal",
       port: parseInt(document.getElementById("link16-scenario-port")?.value || "8700", 10),
@@ -629,13 +644,23 @@ document.getElementById("btn-link16-save-scenario")?.addEventListener("click", a
   const scenario = buildLink16ScenarioPayload();
   await api("/saved-scenarios", { method: "POST", body: JSON.stringify(scenario) });
   state.activeScenarioId = scenario.id;
-  alert(`Saved to data/link16_scenarios/${scenario.id}.json`);
+  syncLink16JsonEditorFromScenario();
+  alert(
+    `Scenario saved to data/link16_scenarios/${scenario.id}.json\n\n` +
+      "Use Download .json to edit in an external editor, or open the file directly in your repo."
+  );
 });
 
 async function loadLink16SavedScenario(id) {
   const scenario = await api(`/saved-scenarios/${id}`);
+  applyLink16ScenarioFromPayload(scenario);
+  navigateTo("link16", "scenario");
+}
+
+function applyLink16ScenarioFromPayload(scenario) {
   state.scenarioSteps = scenario.steps;
   state.activeScenarioId = scenario.id;
+  state.scenarioDescription = scenario.description || "";
   document.getElementById("link16-scenario-name").value = scenario.name;
   document.getElementById("link16-scenario-loops").value = scenario.loop_count;
   document.getElementById("link16-scenario-interval").value = scenario.interval_ms;
@@ -643,7 +668,133 @@ async function loadLink16SavedScenario(id) {
   document.getElementById("link16-scenario-port").value = scenario.transport.port;
   document.getElementById("link16-scenario-protocol").value = scenario.transport.protocol;
   renderLink16ScenarioSteps();
-  navigateTo("link16", "scenario");
+  syncLink16JsonEditorFromScenario();
+  setLink16JsonStatus(`Loaded "${scenario.name}" (${scenario.steps.length} steps).`);
+}
+
+function setLink16JsonStatus(text, isError = false) {
+  const el = document.getElementById("link16-scenario-json-status");
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle("json-status-error", isError);
+}
+
+function syncLink16JsonEditorFromScenario() {
+  const editor = document.getElementById("link16-scenario-json-editor");
+  if (!editor) return;
+  if (state.scenarioSteps.length === 0) {
+    editor.value = "";
+    setLink16JsonStatus("No steps — add steps or import JSON, then refresh.");
+    return;
+  }
+  editor.value = scenarioToJsonString(buildLink16ScenarioPayload());
+  setLink16JsonStatus("Editor synced with current scenario.");
+}
+
+function exportCurrentLink16Scenario() {
+  if (state.scenarioSteps.length === 0) {
+    alert("Nothing to export — add steps or load a scenario first.");
+    return false;
+  }
+  const scenario = buildLink16ScenarioPayload();
+  downloadScenarioJson(scenario);
+  syncLink16JsonEditorFromScenario();
+  setLink16JsonStatus(`Downloaded ${scenarioFilename(scenario)} — edit in your editor, then import.`);
+  return true;
+}
+
+async function exportLink16SavedScenario(id) {
+  try {
+    const scenario = await downloadScenarioFileFromApi(id, api);
+    setLink16JsonStatus(`Downloaded ${scenarioFilename(scenario)} from server.`);
+  } catch (err) {
+    alert(`Export failed: ${err.message}`);
+  }
+}
+
+async function importLink16ScenarioFromJsonText(text, sourceLabel = "JSON") {
+  try {
+    setLink16JsonStatus(`Validating ${sourceLabel}…`);
+    const scenario = await validateScenarioJson(api, text);
+    applyLink16ScenarioFromPayload(scenario);
+    setLink16JsonStatus(`Imported "${scenario.name}" (${scenario.steps.length} steps).`);
+    navigateTo("link16", "scenario");
+    return scenario;
+  } catch (err) {
+    setLink16JsonStatus(`Import failed: ${err.message}`, true);
+    throw err;
+  }
+}
+
+async function importLink16ScenarioFromFile(file) {
+  if (!file) return;
+  const text = await file.text();
+  await importLink16ScenarioFromJsonText(text, file.name);
+}
+
+function wireLink16ScenarioJsonIo() {
+  document.getElementById("btn-link16-export-scenario")?.addEventListener("click", exportCurrentLink16Scenario);
+  document.getElementById("btn-link16-export-scenario-run")?.addEventListener("click", exportCurrentLink16Scenario);
+
+  document.getElementById("btn-link16-save-export-scenario")?.addEventListener("click", async () => {
+    if (state.scenarioSteps.length === 0) {
+      alert("Nothing to save — add steps or import JSON first.");
+      return;
+    }
+    try {
+      const scenario = buildLink16ScenarioPayload();
+      await api("/saved-scenarios", { method: "POST", body: JSON.stringify(scenario) });
+      state.activeScenarioId = scenario.id;
+      downloadScenarioJson(scenario);
+      syncLink16JsonEditorFromScenario();
+      setLink16JsonStatus(
+        `Saved to data/link16_scenarios/${scenario.id}.json and downloaded ${scenarioFilename(scenario)}.`
+      );
+    } catch (err) {
+      alert(`Failed: ${err.message}`);
+    }
+  });
+
+  document.getElementById("btn-link16-sync-json-editor")?.addEventListener("click", syncLink16JsonEditorFromScenario);
+
+  document.getElementById("btn-link16-apply-json-editor")?.addEventListener("click", async () => {
+    const text = document.getElementById("link16-scenario-json-editor")?.value ?? "";
+    try {
+      await importLink16ScenarioFromJsonText(text, "editor");
+    } catch {
+      // status already set
+    }
+  });
+
+  const fileInput = document.getElementById("link16-scenario-import-file");
+  document.getElementById("btn-link16-import-scenario")?.addEventListener("click", () => {
+    fileInput?.click();
+  });
+  fileInput?.addEventListener("change", async () => {
+    const file = fileInput.files?.[0];
+    fileInput.value = "";
+    if (!file) return;
+    try {
+      await importLink16ScenarioFromFile(file);
+    } catch {
+      alert("Import failed — see JSON status below the editor.");
+    }
+  });
+
+  const libraryFileInput = document.getElementById("link16-scenario-library-import-file");
+  document.getElementById("btn-link16-library-import-scenario")?.addEventListener("click", () => {
+    libraryFileInput?.click();
+  });
+  libraryFileInput?.addEventListener("change", async () => {
+    const file = libraryFileInput.files?.[0];
+    libraryFileInput.value = "";
+    if (!file) return;
+    try {
+      await importLink16ScenarioFromFile(file);
+    } catch {
+      alert("Import failed — see JSON status in Scenario Builder.");
+    }
+  });
 }
 
 async function deleteLink16SavedScenario(id) {
@@ -658,4 +809,5 @@ onNavigate(({ protocol, subtab }) => {
   if (subtab === "scenario") updateLink16ScenarioUI();
 });
 
+wireLink16ScenarioJsonIo();
 renderLink16ScenarioSteps();

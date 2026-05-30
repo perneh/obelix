@@ -1166,6 +1166,10 @@ main {
   color: #f87171;
 }
 
+#link16-scenario-json-status.json-status-error {
+  color: #f87171;
+}
+
 .library-scenario-actions {
   margin-bottom: 0.75rem;
 }

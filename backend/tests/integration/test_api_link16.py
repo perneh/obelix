@@ -43,6 +43,23 @@ def test_openapi_link16_send_paths(api_client):
 
 
 @pytest.mark.integration
+def test_j32_help(api_client):
+    help_doc = api_client.get("/api/link16/messages/J3-2/help").json()
+    assert help_doc["j_series"] == "J3.2"
+    assert help_doc["format"] == "markdown"
+    assert "Air track report" in help_doc["content"]
+    assert "`source_ju`" in help_doc["content"]
+
+
+@pytest.mark.integration
+def test_j00_help_generated(api_client):
+    help_doc = api_client.get("/api/link16/messages/J0-0/help").json()
+    assert help_doc["j_series"] == "J0.0"
+    assert "# J0.0 – Network Status" in help_doc["content"]
+    assert "`network_status`" in help_doc["content"]
+
+
+@pytest.mark.integration
 def test_send_j32_via_category_endpoint(api_client):
     detail = api_client.get("/api/link16/messages/J3-2").json()
     fields = {field["id"]: field["default"] for field in detail["fields"]}

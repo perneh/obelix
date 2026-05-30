@@ -1,0 +1,249 @@
+{
+  "id": "jas-f16-marking-fi",
+  "name": "2× JAS + 2× F-16 – marking run vs Finland",
+  "description": "Nordic marking exercise: two Swedish Gripens and two Norwegian F-16s climb to mark against the Finnish border sector. Swedish STRIC and Finnish CRC exchange the picture; aircraft run a coordinated CAP marking profile toward the Gulf of Bothnia.",
+  "transport": {
+    "host": "host.docker.internal",
+    "port": 8700,
+    "protocol": "udp"
+  },
+  "loop_count": 1,
+  "interval_ms": 3000,
+  "steps": [
+    {
+      "id": "fi-crc-picture",
+      "name": "Finnish CRC sector status (J0.0)",
+      "message": {
+        "j_series": "J0.0",
+        "fields": {
+          "source_ju": 10002,
+          "npg": 0,
+          "network_status": 1,
+          "active_participants": 6
+        }
+      },
+      "delay_ms": 0,
+      "repeat": 1
+    },
+    {
+      "id": "se-crc-marking-order",
+      "name": "Swedish STRIC marking order (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 5,
+          "track_number": 110,
+          "text": "NORDIC MARKING: JAS section + F-16 section climb and mark toward FI sector, NPG 2 only, no weapons."
+        }
+      },
+      "delay_ms": 800,
+      "repeat": 1
+    },
+    {
+      "id": "cap-mission-jas",
+      "name": "CAP mission assignment JAS (J12.0)",
+      "message": {
+        "j_series": "J12.0",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 5,
+          "track_number": 101,
+          "mission_type": 1,
+          "position": { "latitude_deg": 60.200, "longitude_deg": 18.800 }
+        }
+      },
+      "delay_ms": 500,
+      "repeat": 1
+    },
+    {
+      "id": "cap-mission-f16",
+      "name": "CAP mission assignment F-16 (J12.0)",
+      "message": {
+        "j_series": "J12.0",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 5,
+          "track_number": 103,
+          "mission_type": 1,
+          "position": { "latitude_deg": 60.180, "longitude_deg": 18.750 }
+        }
+      },
+      "delay_ms": 400,
+      "repeat": 1
+    },
+    {
+      "id": "jas1-climb",
+      "name": "JAS #1 climbing to marking block (J2.3)",
+      "message": {
+        "j_series": "J2.3",
+        "fields": {
+          "source_ju": 11001,
+          "npg": 1,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 7341,
+          "position": { "latitude_deg": 59.900, "longitude_deg": 18.400 },
+          "altitude_ft": 15000,
+          "course_deg": 30,
+          "speed_kts": 380
+        }
+      },
+      "delay_ms": 1500,
+      "repeat": 1
+    },
+    {
+      "id": "jas2-climb",
+      "name": "JAS #2 climbing to marking block (J2.3)",
+      "message": {
+        "j_series": "J2.3",
+        "fields": {
+          "source_ju": 11002,
+          "npg": 1,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 7342,
+          "position": { "latitude_deg": 59.880, "longitude_deg": 18.380 },
+          "altitude_ft": 15000,
+          "course_deg": 35,
+          "speed_kts": 380
+        }
+      },
+      "delay_ms": 400,
+      "repeat": 1
+    },
+    {
+      "id": "f16-1-climb",
+      "name": "F-16 #1 climbing (J2.3)",
+      "message": {
+        "j_series": "J2.3",
+        "fields": {
+          "source_ju": 13001,
+          "npg": 1,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 4201,
+          "position": { "latitude_deg": 59.860, "longitude_deg": 18.360 },
+          "altitude_ft": 14000,
+          "course_deg": 25,
+          "speed_kts": 370
+        }
+      },
+      "delay_ms": 400,
+      "repeat": 1
+    },
+    {
+      "id": "f16-2-climb",
+      "name": "F-16 #2 climbing (J2.3)",
+      "message": {
+        "j_series": "J2.3",
+        "fields": {
+          "source_ju": 13002,
+          "npg": 1,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 4202,
+          "position": { "latitude_deg": 59.840, "longitude_deg": 18.340 },
+          "altitude_ft": 14000,
+          "course_deg": 28,
+          "speed_kts": 370
+        }
+      },
+      "delay_ms": 400,
+      "repeat": 1
+    },
+    {
+      "id": "marking-fl320",
+      "name": "Four-ship at marking altitude FL320 (J3.2 × JAS lead)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 2,
+          "track_number": 101,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 7341,
+          "position": { "latitude_deg": 60.350, "longitude_deg": 19.100 },
+          "altitude_ft": 32000,
+          "course_deg": 10,
+          "speed_kts": 400
+        }
+      },
+      "delay_ms": 2500,
+      "repeat": 1
+    },
+    {
+      "id": "fi-neutral-picture",
+      "name": "Finnish CRC neutral picture update (J3.2)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10002,
+          "npg": 2,
+          "track_number": 101,
+          "identity": 4,
+          "platform": 1,
+          "mode3a": 7341,
+          "position": { "latitude_deg": 60.350, "longitude_deg": 19.100 },
+          "altitude_ft": 32000,
+          "course_deg": 10,
+          "speed_kts": 400
+        }
+      },
+      "delay_ms": 2000,
+      "repeat": 1
+    },
+    {
+      "id": "marking-run-east",
+      "name": "Marking run toward FI border (J3.2)",
+      "message": {
+        "j_series": "J3.2",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 2,
+          "track_number": 103,
+          "identity": 3,
+          "platform": 1,
+          "mode3a": 4201,
+          "position": { "latitude_deg": 60.550, "longitude_deg": 19.800 },
+          "altitude_ft": 32000,
+          "course_deg": 45,
+          "speed_kts": 410
+        }
+      },
+      "delay_ms": 2500,
+      "repeat": 1
+    },
+    {
+      "id": "fi-crc-ack",
+      "name": "Finnish CRC acknowledges marking (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10002,
+          "npg": 5,
+          "track_number": 101,
+          "text": "FI CRC: marking run observed, four friendly fast movers NE sector, exercise acknowledged."
+        }
+      },
+      "delay_ms": 1500,
+      "repeat": 1
+    },
+    {
+      "id": "se-crc-endex",
+      "name": "Swedish STRIC ENDEX (J12.5)",
+      "message": {
+        "j_series": "J12.5",
+        "fields": {
+          "source_ju": 10001,
+          "npg": 5,
+          "track_number": 110,
+          "text": "NORDIC MARKING ENDEX. All aircraft RTB, FI sector picture cleared."
+        }
+      },
+      "delay_ms": 2000,
+      "repeat": 1
+    }
+  ]
+}

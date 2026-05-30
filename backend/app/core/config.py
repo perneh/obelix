@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     templates_dir: Path = Path("data/templates")  # legacy alias
     scenarios_dir: Path = Path("data/scenarios")
     link16_scenarios_dir: Path = Path("data/link16_scenarios")
+    shared_link16_scenarios_dir: Path = Path("scenarios/link16/shared")
     host: str = "0.0.0.0"
     port: int = 8000
 

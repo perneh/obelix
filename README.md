@@ -1,6 +1,6 @@
 # Obelix
 
-Web-based tool for creating, editing and sending ASTERIX messages.
+Web-based tool for creating, editing and sending **ASTERIX** and **Link 16** messages.
 
 ## Quick start
 
@@ -15,7 +15,7 @@ Open [http://localhost:8000](http://localhost:8000) — API docs at [http://loca
 
 | Topic | Description |
 |-------|-------------|
-| [Architecture](docs/architecture.md) | Project structure, design decisions, supported ASTERIX categories |
+| [Architecture](docs/architecture.md) | Project structure, ASTERIX + Link 16 design, testing layers |
 | [Setup](docs/setup.md) | Docker and local installation |
 | [Usage](docs/usage.md) | Message editor, scenarios, templates, UDP testing |
 | [Wireshark installation](docs/wireshark-install.md) | Install Wireshark on macOS, Ubuntu, Red Hat, Windows |
@@ -25,7 +25,9 @@ Open [http://localhost:8000](http://localhost:8000) — API docs at [http://loca
 | [Development](docs/development.md) | Tests, adding categories, environment variables |
 | [Category reference](docs/categories/README.md) | Per-category help (015, 016, 021, 034, 048, 062, 065, 240) — also in the UI |
 | [Link 16 reference](docs/link16/README.md) | J-series messages (J2 PPLI, J3 tracks, J12 mission, …) — also in the UI |
-| [Testing](backend/tests/README.md) | How to run unit, integration, live and regression tests |
+| [Testing](backend/tests/README.md) | Unit, integration, regression, and Playwright frontend tests |
+| [Scenario library (ASTERIX)](../scenarios/README.md) | Pre-built Baltic exercise scenarios |
+| [Scenario library (Link 16)](../scenarios/link16/README.md) | Pre-built J-message exercise scenarios |
 | [Configurations](../configurations/README.md) | Save & share category setups via git |
 
 ## Features

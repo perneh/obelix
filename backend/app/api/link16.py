@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from app.link16.base import j_series_from_slug, j_series_slug
+from app.link16.help_content import load_message_help_content
 from app.link16.registry import encode_message, encode_message_hex, get_message, list_messages
 from app.models.link16_message_send import build_j_series_send_model
 from app.core import link16_configuration_storage, link16_scenario_storage
@@ -24,8 +24,6 @@ from app.models.link16_schemas import (
 from app.models.schemas import ConfigurationScope, ScenarioRunState
 from app.models.schemas import TransportProtocol
 from app.transport.sender import send_tcp, send_udp
-
-DOCS_LINK16_DIR = Path(__file__).resolve().parents[3] / "docs" / "link16"
 
 router = APIRouter(prefix="/link16", tags=["link16"])
 
@@ -94,17 +92,10 @@ def get_link16_message_help(j_series: str) -> dict:
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
-    slug = j_series_slug(series).lower()
-    help_path = DOCS_LINK16_DIR / f"{slug}.md"
-    if not help_path.is_file():
-        readme = DOCS_LINK16_DIR / "README.md"
-        content = readme.read_text(encoding="utf-8") if readme.is_file() else f"# {series}\n\nNo dedicated help page yet."
-        return {"j_series": series, "format": "markdown", "content": content}
-
     return {
         "j_series": series,
         "format": "markdown",
-        "content": help_path.read_text(encoding="utf-8"),
+        "content": load_message_help_content(series),
     }
 
 

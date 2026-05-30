@@ -10,6 +10,7 @@ Install dev dependencies once:
 
 ```bash
 pip install -e ".[dev]"
+playwright install chromium
 chmod +x scripts/test.sh
 ```
 
@@ -30,6 +31,7 @@ All commands assume you are in the **repository root**.
 | **Integration** (in-process API, TestClient) | `./scripts/test.sh integration` |
 | **Live integration** (running server) | `./scripts/test.sh live --address=localhost --port=8000` |
 | **Regression** (HTTP API, per endpoint) | `./scripts/test.sh regression --address=localhost --port=8000` |
+| **Frontend** (Playwright UI, running server) | `./scripts/test.sh frontend --address=localhost --port=8000` |
 | **Coverage** | `./scripts/test.sh cov` |
 
 Equivalent `pytest` invocations:
@@ -40,6 +42,7 @@ pytest backend/tests/unit -m unit               # unit
 pytest backend/tests/integration -m "integration and not live"   # integration
 pytest backend/tests/integration -m live --address=localhost --port=8000
 pytest backend/tests/regression -m regression --address=localhost --port=8000
+pytest backend/tests/frontend -m frontend --address=localhost --port=8000
 ```
 
 ### Stop on first failure and show statistics
@@ -119,6 +122,9 @@ Regression layout:
 | Templates | `regression/test_scenario_templates.py` | `/api/scenario-templates` |
 | Saved scenarios | `regression/test_saved_scenarios.py` | `/api/saved-scenarios` |
 | Send | `regression/test_send.py` | `POST /api/send`, `POST /api/send/34`, OpenAPI paths |
+| Frontend navigation | `frontend/regression/test_navigation.py` | Dropdown nav, panel switching |
+| Frontend editors | `frontend/regression/test_message_editor.py` | ASTERIX/Link 16 encode buttons |
+| Frontend Link 16 I/O | `frontend/regression/test_link16_scenario_io.py` | Scenario JSON import/export UI |
 
 ## Directory layout
 
@@ -136,13 +142,21 @@ backend/tests/
 │   └── assertions/          # reusable assertion helpers
 ├── unit/                    # pure encoding/registry tests
 ├── integration/             # API tests (in-process and live)
-└── regression/              # live HTTP regression suites (httpx, per category)
+├── regression/              # live HTTP regression suites (httpx, per category)
+└── frontend/                # Playwright UI tests (running web server)
+    ├── conftest.py          # base_url + Playwright browser check
+    ├── regression/          # UI regression suites
+    └── support/
+        ├── actions/         # navigation, editors, scenario I/O
+        └── assertions/      # panel visibility and content checks
 ```
 
 | Folder | Purpose |
 |--------|---------|
 | `unit/` | ASTERIX encoding and registry without network I/O |
 | `integration/` | FastAPI endpoints via TestClient or live httpx client |
+| `regression/` | Live HTTP regression against running backend |
+| `frontend/` | Playwright UI tests against running Obelix web UI |
 | `support/builders/` | Construct field values and API payloads (pure) |
 | `support/actions/` | Execute workflows; log at DEBUG/INFO |
 | `support/assertions/` | Compare actual vs expected with clear messages |
@@ -211,6 +225,7 @@ Session fixtures `address` and `port` (regression) or `live_http_client` (live i
 | `integration` | API boundary tests |
 | `live` | Requires running server (auto-skip if down) |
 | `regression` | Live HTTP regression against running backend (auto-skip if down) |
+| `frontend` | Playwright UI tests against running Obelix (auto-skip if down or no browser) |
 | `slow` | Reserved for long-running tests |
 
 ```bash
@@ -218,6 +233,7 @@ pytest -m unit
 pytest -m "integration and not live"
 pytest -m live --url=http://localhost:8000
 pytest -m regression --address=localhost --port=8000
+pytest -m frontend --address=localhost --port=8000
 ```
 
 ## CI
